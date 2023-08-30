@@ -38,26 +38,6 @@ public class Syncher.HomeView : Gtk.Box {
         sync_now_stack.add_child (sync_now);
         sync_now_stack.add_child (preparing_sync);
 
-        // var placeholder_box = new Gtk.Box (VERTICAL, 12);
-        // placeholder_box.append (placeholder);
-        // placeholder_box.append (sync_now_stack);
-
-        // var first_progress_widget = new ProgressWidget ();
-
-        // var second_progress_widget = new ProgressWidget ();
-
-        // var progress = new Gtk.Box (HORIZONTAL, 12) {
-        //     valign = CENTER
-        // };
-        // progress.append (first_progress_widget);
-        // progress.append (second_progress_widget);
-
-        // var stack = new Gtk.Stack () {
-        //     transition_type = CROSSFADE
-        // };
-        // stack.add_child (placeholder_box);
-        // stack.add_child (progress);
-
         var box = new Gtk.Box (VERTICAL, 12) {
             halign = CENTER,
             valign = CENTER,
@@ -95,33 +75,6 @@ public class Syncher.HomeView : Gtk.Box {
         syncher_service.finish_sync.connect (() => {
             sync_now_stack.visible_child = sync_now;
         });
-
-        // syncher_service.start_sync.connect ((sync_type) => {
-        //     stack.visible_child = progress;
-
-        //     if (sync_type == IMPORT) {
-        //         first_progress_widget.label = _("Installing Apps");
-        //         second_progress_widget.label = _("Loading Configuration");
-        //     } else {
-        //         first_progress_widget.label = _("Saving Apps");
-        //         second_progress_widget.label = _("Saving Configuration");
-        //     }
-        // });
-
-        // syncher_service.finish_sync.connect (() => {
-        //     stack.visible_child = placeholder_box;
-        //     sync_now_stack.visible_child = sync_now;
-        //     first_progress_widget.fraction = 0;
-        //     second_progress_widget.fraction = 0;
-        // });
-
-        // syncher_service.progress.connect ((step, percentage) => {
-        //     if (step == INSTALLING_FLATPAKS || step == SAVING_FLATPAKS) {
-        //         first_progress_widget.fraction = (double) percentage / 100;
-        //     } else {
-        //         second_progress_widget.fraction = (double) percentage / 100;
-        //     }
-        // });
     }
 
     private void get_sync_location () {
