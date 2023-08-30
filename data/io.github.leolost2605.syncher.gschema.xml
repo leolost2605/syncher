@@ -16,7 +16,7 @@
       <summary>Most recent window size</summary>
       <description>Most recent window size (width, height)</description>
     </key>
-    <key name="last-import-time" type="x">
+    <key name="last-sync-time" type="x">
       <default>0</default>
       <summary>Most recent time configuration was imported from a remote location</summary>
       <description>Most recent time configuration was exported from this device in unix time.</description>

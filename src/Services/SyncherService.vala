@@ -7,12 +7,19 @@ public class Syncher.SyncherService : Object {
     public signal void fatal_error (ProgressStep step, string msg);
     public signal void error (ProgressStep step, string msg);
     public signal void progress (ProgressStep step, int percentage);
+    public signal void start_sync (SyncType sync_type);
+    public signal void finish_sync ();
 
     public enum ProgressStep {
         LOADING_CONFIGURATION,
         INSTALLING_FLATPAKS,
         SAVING_CONFIGURATION,
         SAVING_FLATPAKS
+    }
+
+    public enum SyncType {
+        IMPORT,
+        EXPORT
     }
 
     private static GLib.Once<SyncherService> _instance;
@@ -33,23 +40,23 @@ public class Syncher.SyncherService : Object {
         fatal_error.connect ((step, msg) => warning ("An error occured during %s: %s", step.to_string (), msg));
     }
 
-    public async void sync (File dir) {
+    public async void sync (File dir, bool should_export = true) {
+        var settings = new GLib.Settings ("io.github.leolost2605.syncher");
         var file = dir.get_child (FLATPAKS_FILE_NAME);
-        if (file != null) {
+        if (file.query_exists ()) {
             try {
                 var info = yield file.query_info_async ("*", NONE);
                 var mod_time = info.get_modification_date_time ();
                 if (mod_time != null) {
-                    var settings = new GLib.Settings ("io.github.leolost2605.syncher");
-                    var last_import_time = new DateTime.from_unix_utc (settings.get_int64 ("last-import-time"));
-                    if (mod_time.difference (last_import_time) > TimeSpan.MINUTE) {
+                    var last_sync_time = new DateTime.from_unix_utc (settings.get_int64 ("last-sync-time"));
+                    if (mod_time.difference (last_sync_time) > TimeSpan.MINUTE) {
                         import.begin (dir);
-                        settings.set_int64 ("last-import-time", mod_time.to_unix ());
+                        settings.set_int64 ("last-sync-time", mod_time.to_unix ());
                         print ("Import!");
-                    } else {
+                        return;
+                    } else if (should_export) {
                         print ("Export!");
                         export.begin (dir);
-                        settings.set_int64 ("last-import-time", new DateTime.now_utc ().to_unix ());
                     }
                 } else {
                     print ("Mod time is null!");
@@ -59,15 +66,23 @@ public class Syncher.SyncherService : Object {
             }
         } else {
             print ("Sync dir not found!");
-            export.begin (dir);
+            if (should_export) {
+                export.begin (dir);
+            }
         }
+
+        settings.set_int64 ("last-sync-time", new DateTime.now_utc ().to_unix ());
     }
 
     public async void import (File dir) {
+        start_sync (IMPORT);
+
         var flatpak_file = dir.get_child (FLATPAKS_FILE_NAME);
         yield install_saved_flatpak_apps (flatpak_file);
         var dconf_file = dir.get_child (DCONF_FILE_NAME);
         yield load_saved_configuration (dconf_file);
+
+        finish_sync ();
     }
 
     private async void install_saved_flatpak_apps (File file) {
@@ -161,19 +176,18 @@ public class Syncher.SyncherService : Object {
     }
 
     public async void export (File dir) {
+        start_sync (EXPORT);
+
         var flatpak_file = dir.get_child (FLATPAKS_FILE_NAME);
         yield save_flatpak_apps (flatpak_file);
         var dconf_file = dir.get_child (DCONF_FILE_NAME);
         yield save_configuration (dconf_file);
+
+        finish_sync ();
     }
 
     private async void save_flatpak_apps (File file) {
         progress (SAVING_FLATPAKS, 0);
-
-        if (!file.query_exists ()) {
-            fatal_error (SAVING_FLATPAKS, "File doesn't exist.");
-            return;
-        }
 
         try {
             var subprocess = new Subprocess (
@@ -212,11 +226,6 @@ public class Syncher.SyncherService : Object {
 
     private async void save_configuration (File file) {
         progress (SAVING_CONFIGURATION, 0);
-
-        if (!file.query_exists ()) {
-            fatal_error (SAVING_CONFIGURATION, "File doesn't exist.");
-            return;
-        }
 
         try {
             var subprocess = new Subprocess (
