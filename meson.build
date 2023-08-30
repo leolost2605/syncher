@@ -1,10 +1,14 @@
 # project name and programming language
 project('io.github.leolost2605.syncher', 'vala', 'c')
 
+gnome = import('gnome')
+
 # Create a new executable, list the files we want to compile, list the dependencies we need, and install
 executable(
     meson.project_name(),
     'src' / 'Application.vala',
+    'src' / 'Window.vala',
+    'src' / 'Services' / 'SyncherService.vala',
     dependencies: [
         dependency('gtk4')
     ],
@@ -37,3 +41,7 @@ foreach i : icon_sizes
         rename: meson.project_name() + '.svg'
     )
 endforeach
+
+gnome.post_install(glib_compile_schemas: true)
+
+subdir('data')
