@@ -4,7 +4,9 @@
  */
 
 public class MyApp : Gtk.Application {
-    private const string INSTALLED_FLATPAKS_FILE_NAME = ".installed_flatpaks";
+    private const string INSTALLED_FLATPAKS_FILE_NAME = ".installed-flatpaks";
+    private const string DCONF_CONFIG_FILE_NAME = ".dconf-config";
+
     private Gtk.DropDown drop_down;
     private Gtk.StringList uris;
     public MyApp () {
@@ -56,6 +58,7 @@ public class MyApp : Gtk.Application {
             if (res == Gtk.ResponseType.ACCEPT) {
                 var file = file_chooser.get_file ();
                 save_flatpak_apps.begin (file);
+                save_configuration.begin (file);
             }
             file_chooser.destroy ();
         });
@@ -68,7 +71,7 @@ public class MyApp : Gtk.Application {
         file_chooser.response.connect ((res) => {
             if (res == Gtk.ResponseType.ACCEPT) {
                 var file = file_chooser.get_file ();
-                install_saved_flatpak_apps.begin (file);
+                load_saved_configuration.begin (file);
             }
             file_chooser.destroy ();
         });
@@ -78,7 +81,7 @@ public class MyApp : Gtk.Application {
 
     private async void install_saved_flatpak_apps (File dir) {
         try {
-            var file = File.new_build_filename (dir.get_path (), ".flatpak-apps");
+            var file = File.new_build_filename (dir.get_path (), INSTALLED_FLATPAKS_FILE_NAME);
 
             var subprocess = new Subprocess (
                 STDERR_PIPE,
@@ -87,21 +90,13 @@ public class MyApp : Gtk.Application {
                 "sh",
                 file.get_path ()
             );
-            var err_input_stream = subprocess.get_stderr_pipe ();
 
-            yield subprocess.wait_async (null);
+            Bytes stderr;
+            yield subprocess.communicate_async (null, null, null, out stderr);
 
-            if (subprocess.get_exit_status () != 0) {
-                var buffer_is = new BufferedInputStream (err_input_stream);
-                var builder = new StringBuilder ();
-                uint8 buffer[100];
-                ssize_t size;
-
-                while ((size = yield buffer_is.read_async (buffer)) > 0) {
-                    builder.append_len ((string) buffer, size);
-                }
-
-                warning ("Failed to install flatpak apps: %s", (string) builder.str);
+            var stderr_data = Bytes.unref_to_data (stderr);
+            if (stderr_data != null) {
+                warning ("Failed to install saved flatpak apps: %s", (string) stderr_data);
             }
         } catch (Error e) {
             warning ("Failed to create sh subprocess: %s", e.message);
@@ -119,35 +114,84 @@ public class MyApp : Gtk.Application {
                 "--columns=application",
                 "--app"
             );
-            var err_input_stream = subprocess.get_stderr_pipe ();
-            var out_input_stream = subprocess.get_stdout_pipe ();
 
-            yield subprocess.wait_async (null);
+            Bytes stderr;
+            Bytes stdout;
+            yield subprocess.communicate_async (null, null, out stdout, out stderr);
 
-            if (subprocess.get_exit_status () != 0) {
-                var buffer_is = new BufferedInputStream (err_input_stream);
-                var builder = new StringBuilder ();
-                uint8 buffer[100];
-                ssize_t size;
-
-                while ((size = yield buffer_is.read_async (buffer)) > 0) {
-                    builder.append_len ((string) buffer, size);
-                }
-
-                warning ("Failed to list flatpak applications: %s", (string) builder.str);
-            } else {
-                var data_is = new DataInputStream (out_input_stream);
-                var builder = new StringBuilder ();
-                string? data = null;
-
-                while ((data = yield data_is.read_line_async ()) != null) {
-                    builder.append ("flatpak install --user %s -y\n".printf (data));
-                }
-
-                var file = File.new_build_filename (dir.get_path (), ".flatpak-apps");
-
+            var stderr_data = Bytes.unref_to_data (stderr);
+            var stdout_data = Bytes.unref_to_data (stdout);
+            if (stderr_data != null) {
+                warning ("Failed to save flatpak apps: %s", (string) stderr_data);
+            } else if (stdout_data != null) {
+                var file = File.new_build_filename (dir.get_path (), INSTALLED_FLATPAKS_FILE_NAME);
                 try {
-                    yield file.replace_contents_async (builder.data, null, false, REPLACE_DESTINATION, null, null);
+                    yield file.replace_contents_async (stdout_data, null, false, REPLACE_DESTINATION, null, null);
+                } catch (Error e) {
+                    warning ("Failed to replace contents: %s", e.message);
+                }
+            }
+        } catch (Error e) {
+            warning ("Failed to create subprocess: %s", e.message);
+        }
+    }
+
+    private async void load_saved_configuration (File dir) {
+        try {
+            var file = File.new_build_filename (dir.get_path (), DCONF_CONFIG_FILE_NAME);
+
+            var subprocess = new Subprocess (
+                STDIN_PIPE | STDERR_PIPE,
+                "flatpak-spawn",
+                "--host",
+                "dconf",
+                "load",
+                "/"
+            );
+
+            uint8[] contents;
+            try {
+                yield file.load_contents_async (null, out contents, null);
+            } catch (Error e) {
+                warning ("Failed to load config file: %s", e.message);
+                return;
+            }
+
+            Bytes stderr;
+            yield subprocess.communicate_async (new Bytes (contents), null, null, out stderr);
+
+            var stderr_data = Bytes.unref_to_data (stderr);
+            if (stderr_data != null) {
+                warning ("Failed to load saved configuration into dconf: %s", (string) stderr_data);
+            }
+        } catch (Error e) {
+            warning ("Failed to create dconf load subprocess: %s", e.message);
+        }
+    }
+
+    private async void save_configuration (File dir) {
+        try {
+            var subprocess = new Subprocess (
+                STDERR_PIPE | STDOUT_PIPE,
+                "flatpak-spawn",
+                "--host",
+                "dconf",
+                "dump",
+                "/"
+            );
+
+            Bytes stderr;
+            Bytes stdout;
+            yield subprocess.communicate_async (null, null, out stdout, out stderr);
+
+            var stderr_data = Bytes.unref_to_data (stderr);
+            var stdout_data = Bytes.unref_to_data (stdout);
+            if (stderr_data != null) {
+                warning ("Failed to load saved configuration into dconf: %s", (string) stderr_data);
+            } else if (stdout_data != null) {
+                var file = File.new_build_filename (dir.get_path (), DCONF_CONFIG_FILE_NAME);
+                try {
+                    yield file.replace_contents_async (stdout_data, null, false, REPLACE_DESTINATION, null, null);
                 } catch (Error e) {
                     warning ("Failed to replace contents: %s", e.message);
                 }
