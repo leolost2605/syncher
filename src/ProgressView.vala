@@ -7,11 +7,15 @@ public class Syncher.ProgressView : Gtk.Box {
         };
         header_bar.add_css_class (Granite.STYLE_CLASS_FLAT);
 
-        var first_progress_widget = new ProgressWidget ();
+        var first_progress_widget = new ProgressWidget ("1");
 
-        var second_progress_widget = new ProgressWidget ();
+        var second_progress_widget = new ProgressWidget ("2");
 
-        var third_progress_widget = new ProgressWidget ();
+        var third_progress_widget = new ProgressWidget ("3");
+
+        var completed_stack = new Gtk.Stack ();
+        completed_stack.add_named (new Gtk.Label ("<big>4</big>") { use_markup = true }, "step");
+        completed_stack.add_named (new Gtk.Image.from_icon_name ("emblem-default") { pixel_size = 32 }, "emblem");
 
         var grid = new Gtk.Grid () {
             hexpand = true,
@@ -32,7 +36,7 @@ public class Syncher.ProgressView : Gtk.Box {
         grid.attach (third_progress_widget.stack, 9, 0, 1, 1);
         grid.attach (third_progress_widget.label_widget, 8, 1, 3, 1);
         grid.attach (third_progress_widget.progress_bar, 10, 0, 3, 1);
-        grid.attach (new Gtk.Image.from_icon_name ("emblem-default") {pixel_size = 32}, 13, 0, 1, 1);
+        grid.attach (completed_stack, 13, 0, 1, 1);
         grid.attach (new Gtk.Label (_("Completed")), 12, 1, 3, 1);
 
         var handle = new Gtk.WindowHandle () {
@@ -54,25 +58,41 @@ public class Syncher.ProgressView : Gtk.Box {
 
         syncher_service.start_sync.connect ((sync_type) => {
             if (sync_type == IMPORT) {
+                first_progress_widget.label = _("Adding Software Sources");
                 second_progress_widget.label = _("Installing Apps");
                 third_progress_widget.label = _("Loading Configuration");
             } else {
+                first_progress_widget.label = _("Saving Software Sources");
                 second_progress_widget.label = _("Saving Apps");
                 third_progress_widget.label = _("Saving Configuration");
             }
         });
 
+        syncher_service.finish_sync.connect (() => completed_stack.set_visible_child_name ("emblem"));
+
         unmap.connect (() => {
+            completed_stack.set_visible_child_name ("step");
             first_progress_widget.fraction = 0;
             second_progress_widget.fraction = 0;
             third_progress_widget.fraction = 0;
         });
 
         syncher_service.progress.connect ((step, percentage) => {
-            if (step == INSTALLING_FLATPAKS || step == SAVING_FLATPAKS) {
-                second_progress_widget.fraction = (double) percentage / 100;
-            } else {
-                third_progress_widget.fraction = (double) percentage / 100;
+            switch (step) {
+                case SAVING_REMOTES:
+                case ADDING_REMOTES:
+                    first_progress_widget.fraction = (double) percentage / 100;
+                    break;
+
+                case SAVING_FLATPAKS:
+                case INSTALLING_FLATPAKS:
+                    second_progress_widget.fraction = (double) percentage / 100;
+                    break;
+
+                case SAVING_CONFIGURATION:
+                case LOADING_CONFIGURATION:
+                    third_progress_widget.fraction = (double) percentage / 100;
+                    break;
             }
         });
     }

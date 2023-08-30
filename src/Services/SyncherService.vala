@@ -13,6 +13,8 @@ public class Syncher.SyncherService : Object {
     public enum ProgressStep {
         LOADING_CONFIGURATION,
         INSTALLING_FLATPAKS,
+        ADDING_REMOTES,
+        SAVING_REMOTES,
         SAVING_CONFIGURATION,
         SAVING_FLATPAKS
     }
@@ -28,6 +30,7 @@ public class Syncher.SyncherService : Object {
     }
 
 
+    private const string FLATPAK_REMOTES_FILE_NAME = ".flatpak-remotes";
     private const string FLATPAKS_FILE_NAME = ".installed-flatpaks";
     private const string DCONF_FILE_NAME = ".dconf-config";
 
@@ -77,12 +80,70 @@ public class Syncher.SyncherService : Object {
     public async void import (File dir) {
         start_sync (IMPORT);
 
+        var flatpak_remotes_file = dir.get_child (FLATPAK_REMOTES_FILE_NAME);
+        yield add_saved_flatpak_remotes (flatpak_remotes_file);
         var flatpak_file = dir.get_child (FLATPAKS_FILE_NAME);
         yield install_saved_flatpak_apps (flatpak_file);
         var dconf_file = dir.get_child (DCONF_FILE_NAME);
         yield load_saved_configuration (dconf_file);
 
         finish_sync ();
+    }
+
+    private async void add_saved_flatpak_remotes (File file) {
+        progress (ADDING_REMOTES, 0);
+
+        if (!file.query_exists ()) {
+            fatal_error (ADDING_REMOTES, "File doesn't exist.");
+            return;
+        }
+
+        uint8[] contents;
+        try {
+            yield file.load_contents_async (cancellable, out contents, null);
+        } catch (Error e) {
+            fatal_error (ADDING_REMOTES, "Failed to load file: %s".printf (e.message));
+            return;
+        }
+
+        var remotes = ((string) contents).split_set ("\n");
+
+        int counter = 0;
+        foreach (var remote in remotes) {
+            var parts = remote.split_set ("\t");
+
+            if (parts.length == 2) {
+                try {
+                    var subprocess = new Subprocess (
+                        STDERR_PIPE,
+                        "flatpak-spawn",
+                        "--host",
+                        "flatpak",
+                        "remote-add",
+                        "--if-not-exists",
+                        parts[0],
+                        parts[1]
+                    );
+
+                    Bytes stderr;
+                    yield subprocess.communicate_async (null, null, null, out stderr);
+
+                    var stderr_data = Bytes.unref_to_data (stderr);
+                    if (stderr_data != null) {
+                        error (ADDING_REMOTES, "Failed to add flatpak remote '%s': %s".printf (remote, (string) stderr_data));
+                    }
+                } catch (Error e) {
+                    error (ADDING_REMOTES, "Failed to create flatpak remote-add subprocess: %s".printf (e.message));
+                }
+            } else {
+                error (ADDING_REMOTES, "Unknown parameters provided.");
+            }
+
+            counter++;
+            progress (ADDING_REMOTES, (counter / remotes.length) * 100);
+        }
+
+        progress (INSTALLING_FLATPAKS, 100);
     }
 
     private async void install_saved_flatpak_apps (File file) {
@@ -128,7 +189,7 @@ public class Syncher.SyncherService : Object {
             }
 
             counter++;
-            progress (INSTALLING_FLATPAKS, (counter / apps.length) * 100);
+            progress (INSTALLING_FLATPAKS, (int) (((double) counter / (double) apps.length) * 100));
         }
 
         progress (INSTALLING_FLATPAKS, 100);
@@ -178,12 +239,52 @@ public class Syncher.SyncherService : Object {
     public async void export (File dir) {
         start_sync (EXPORT);
 
+        var flatpak_remotes_file = dir.get_child (FLATPAK_REMOTES_FILE_NAME);
+        yield save_flatpak_remotes (flatpak_remotes_file);
         var flatpak_file = dir.get_child (FLATPAKS_FILE_NAME);
         yield save_flatpak_apps (flatpak_file);
         var dconf_file = dir.get_child (DCONF_FILE_NAME);
         yield save_configuration (dconf_file);
 
         finish_sync ();
+    }
+
+    private async void save_flatpak_remotes (File file) {
+        progress (SAVING_REMOTES, 0);
+
+        try {
+            var subprocess = new Subprocess (
+                STDERR_PIPE | STDOUT_PIPE,
+                "flatpak-spawn",
+                "--host",
+                "flatpak",
+                "remotes",
+                "--installation=default",
+                "--columns=name,url"
+            );
+
+            Bytes stderr;
+            Bytes stdout;
+            yield subprocess.communicate_async (null, null, out stdout, out stderr);
+
+            progress (SAVING_FLATPAKS, 50);
+
+            var stderr_data = Bytes.unref_to_data (stderr);
+            var stdout_data = Bytes.unref_to_data (stdout);
+            if (stderr_data != null) {
+                fatal_error (SAVING_REMOTES, "Failed to save flatpak remotes: %s".printf ((string) stderr_data));
+            } else if (stdout_data != null) {
+                try {
+                    yield file.replace_contents_async (stdout_data, null, false, REPLACE_DESTINATION, null, null);
+                } catch (Error e) {
+                    fatal_error (SAVING_REMOTES, "Failed to replace contents: %s".printf (e.message));
+                }
+            }
+        } catch (Error e) {
+            fatal_error (SAVING_REMOTES, "Failed to create subprocess: %s".printf (e.message));
+        }
+
+        progress (SAVING_FLATPAKS, 100);
     }
 
     private async void save_flatpak_apps (File file) {

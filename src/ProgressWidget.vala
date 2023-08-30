@@ -1,4 +1,5 @@
 public class ProgressWidget : Object {
+    public string step { get; construct; }
     public string label { get; set; default = "Task"; }
     public double fraction { get; set; default = 0; }
 
@@ -6,18 +7,27 @@ public class ProgressWidget : Object {
     public Gtk.Label label_widget { get; construct; }
     public Gtk.ProgressBar progress_bar { get; construct; }
 
+    public ProgressWidget (string step) {
+        Object (step: step);
+    }
+
     construct {
         var image = new Gtk.Image.from_icon_name ("emblem-default") {
             pixel_size = 32
         };
 
         var spinner = new Gtk.Spinner () {
-            spinning = false
+            spinning = true
+        };
+
+        var step_label = new Gtk.Label ("<big>%s</big>".printf (step)) {
+            use_markup = true
         };
 
         stack = new Gtk.Stack ();
-        stack.add_named (image, "done");
-        stack.add_named (spinner, "in-progress");
+        stack.add_child (step_label);
+        stack.add_child (spinner);
+        stack.add_child (image);
 
         label_widget = new Gtk.Label (label);
         bind_property ("label", label_widget, "label", SYNC_CREATE);
@@ -33,9 +43,8 @@ public class ProgressWidget : Object {
                 stack.set_visible_child (image);
             } else if (fraction > 0) {
                 stack.set_visible_child (spinner);
-                spinner.spinning = true;
             } else {
-                spinner.spinning = false;
+                stack.set_visible_child (step_label);
             }
         });
     }

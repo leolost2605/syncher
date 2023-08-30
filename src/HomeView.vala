@@ -7,11 +7,23 @@ public class Syncher.HomeView : Gtk.Box {
         };
         header_bar.add_css_class (Granite.STYLE_CLASS_FLAT);
 
-        var image = new Gtk.Image.from_icon_name ("emblem-default") {
+        var emblem = new Gtk.Image.from_icon_name ("emblem-default") {
+            halign = END,
+            valign = END,
             pixel_size = 64
         };
 
-        var label = new Gtk.Label (_("<big><b>Nothing to do</b></big>\nYou're up to date")) {
+        var image = new Gtk.Image.from_icon_name ("sync-synchronizing-symbolic") {
+            pixel_size = 128
+        };
+
+        var image_overlay = new Gtk.Overlay () {
+            child = image,
+            halign = CENTER
+        };
+        image_overlay.add_overlay (emblem);
+
+        var label = new Gtk.Label (_("<span size='xx-large'><b>Nothing to do!</b></span>\nYou're all synchronized. To manually start a new synchronization click the button below.")) {
             halign = CENTER,
             use_markup = true,
             justify = CENTER
@@ -46,7 +58,7 @@ public class Syncher.HomeView : Gtk.Box {
             margin_end = 12,
             margin_bottom = 12
         };
-        box.append (image);
+        box.append (image_overlay);
         box.append (label);
         box.append (sync_now_stack);
 
