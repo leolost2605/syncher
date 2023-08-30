@@ -14,11 +14,13 @@ executable(
     'src' / 'Application.vala',
     'src' / 'HomeView.vala',
     'src' / 'Window.vala',
+    'src' / 'ProgressView.vala',
     'src' / 'ProgressWidget.vala',
     'src' / 'Services' / 'SyncherService.vala',
     dependencies: [
         dependency('gtk4'),
-        dependency('granite-7')
+        dependency('granite-7'),
+        dependency('libadwaita-1')
     ],
     install: true
 )

@@ -1,42 +1,41 @@
-public class ProgressWidget : Gtk.Grid {
+public class ProgressWidget : Object {
     public string label { get; set; default = "Task"; }
     public double fraction { get; set; default = 0; }
 
-    private Gtk.Stack stack;
+    public Gtk.Stack stack { get; construct; }
+    public Gtk.Label label_widget { get; construct; }
+    public Gtk.ProgressBar progress_bar { get; construct; }
 
     construct {
-        var image = new Gtk.Image.from_icon_name ("emblem-default");
-
-        var to_do = new Gtk.Image.from_icon_name ("sync-synchronizing-symbolic");
+        var image = new Gtk.Image.from_icon_name ("emblem-default") {
+            pixel_size = 32
+        };
 
         var spinner = new Gtk.Spinner () {
-            spinning = true
+            spinning = false
         };
 
         stack = new Gtk.Stack ();
-        stack.add_named (to_do, "to-do");
         stack.add_named (image, "done");
         stack.add_named (spinner, "in-progress");
 
-        var label = new Gtk.Label (label);
-        bind_property ("label", label, "label", SYNC_CREATE);
+        label_widget = new Gtk.Label (label);
+        bind_property ("label", label_widget, "label", SYNC_CREATE);
 
-        var progress_bar = new Gtk.ProgressBar () {
-            hexpand = true
+        progress_bar = new Gtk.ProgressBar () {
+            hexpand = true,
+            valign = CENTER
         };
         bind_property ("fraction", progress_bar, "fraction", SYNC_CREATE);
-
-        attach (stack, 0, 0);
-        attach (label, 0, 1);
-        attach (progress_bar, 1, 0, 2);
 
         notify["fraction"].connect (() => {
             if (fraction == 1) {
                 stack.set_visible_child (image);
             } else if (fraction > 0) {
                 stack.set_visible_child (spinner);
+                spinner.spinning = true;
             } else {
-                stack.set_visible_child (to_do);
+                spinner.spinning = false;
             }
         });
     }

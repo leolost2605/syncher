@@ -11,21 +11,8 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
     }
 
     construct {
-        // var headerbar = new Gtk.HeaderBar () {
-        //     show_title_buttons = true
-        // };
-
         // var uris = new Gtk.StringList (null);
         // var drop_down = new Gtk.DropDown (uris, null);
-        // var export = new Gtk.Button.with_label ("Export");
-        // var import = new Gtk.Button.with_label ("Import");
-        // var sync = new Gtk.Button.with_label ("Sync");
-        // var box = new Gtk.Box (VERTICAL, 12);
-        // box.append (drop_down);
-        // box.append (export);
-        // box.append (import);
-        // box.append (sync);
-        // box.append (new ProgressWidget ());
         // var volume_monitor = VolumeMonitor.get ();
         // foreach (var mount in volume_monitor.get_mounts ()) {
         //     uris.append (mount.get_default_location ().get_uri ());
@@ -38,16 +25,37 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
         //     }
         // }
 
-        child = new HomeView ();
-        default_height = 300;
-        default_width = 500;
-        title = "MyApp";
-        titlebar = new Gtk.Grid ();
+        var home_view = new HomeView ();
+
+        var progress_view = new ProgressView ();
+
+        var leaflet = new Adw.Leaflet () {
+            can_unfold = false,
+            hexpand = true,
+            vexpand = true
+        };
+        leaflet.append (home_view);
+        leaflet.append (progress_view);
+
+        child = leaflet;
+        default_height = 550;
+        default_width = 800;
+        title = "Syncher";
+        titlebar = new Gtk.Grid () { visible = false };
         present ();
 
-        // export.clicked.connect (get_location);
-        // import.clicked.connect (get_import_location);
-        // sync.clicked.connect (get_sync_location);
+        var syncher_service = SyncherService.get_default ();
+
+        syncher_service.start_sync.connect (() => {
+            leaflet.visible_child = progress_view;
+        });
+
+        syncher_service.finish_sync.connect (() => {
+            Timeout.add_seconds (2, () => {
+                leaflet.visible_child = home_view;
+                return Source.REMOVE;
+            });
+        });
     }
 
     private void get_location () {

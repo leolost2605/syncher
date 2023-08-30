@@ -12,6 +12,7 @@ public class Syncher.Application : Gtk.Application {
     }
 
     protected override void activate () {
+        // Adw.init ();
         var main_window = new MainWindow (this);
     }
 
