@@ -11,7 +11,7 @@ public class MyApp : Gtk.Application {
     private Gtk.StringList uris;
     public MyApp () {
         Object (
-            application_id: "io.github.myteam.myapp",
+            application_id: "io.github.leolost2605.syncher",
             flags: ApplicationFlags.FLAGS_NONE
         );
     }
