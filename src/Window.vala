@@ -25,6 +25,7 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
         box.append (export);
         box.append (import);
         box.append (sync);
+        box.append (new ProgressWidget ());
         var volume_monitor = VolumeMonitor.get ();
         foreach (var mount in volume_monitor.get_mounts ()) {
             uris.append (mount.get_default_location ().get_uri ());
@@ -54,7 +55,7 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
         file_chooser.response.connect ((res) => {
             if (res == Gtk.ResponseType.ACCEPT) {
                 var file = file_chooser.get_file ();
-                new SyncherService ().export.begin (file);
+                SyncherService.get_default ().export.begin (file);
             }
             file_chooser.destroy ();
         });
@@ -67,7 +68,7 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
         file_chooser.response.connect ((res) => {
             if (res == Gtk.ResponseType.ACCEPT) {
                 var file = file_chooser.get_file ();
-                new SyncherService ().import.begin (file);
+                SyncherService.get_default ().import.begin (file);
             }
             file_chooser.destroy ();
         });
@@ -80,7 +81,7 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
         file_chooser.response.connect ((res) => {
             if (res == Gtk.ResponseType.ACCEPT) {
                 var file = file_chooser.get_file ();
-                new SyncherService ().sync.begin (file);
+                SyncherService.get_default ().sync.begin (file);
             }
             file_chooser.destroy ();
         });

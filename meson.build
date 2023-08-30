@@ -8,6 +8,7 @@ executable(
     meson.project_name(),
     'src' / 'Application.vala',
     'src' / 'Window.vala',
+    'src' / 'ProgressWidget.vala',
     'src' / 'Services' / 'SyncherService.vala',
     dependencies: [
         dependency('gtk4')
