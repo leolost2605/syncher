@@ -86,21 +86,23 @@ public class Syncher.SyncherService : Object {
             var info = yield dir.query_info_async ("*", NONE);
             var mod_time = info.get_modification_date_time ();
             if (mod_time != null) {
-                if (mod_time.difference (last_sync_time) > TimeSpan.MINUTE && mod_time.compare (last_sync_time) > 0) {
-                    import.begin (dir);
+                if (mod_time.compare (last_sync_time) > 0) {
+                    yield import (dir);
                     print ("Import!");
                 } else if (should_export) {
                     print ("Export!");
-                    export.begin (dir);
+                    yield export (dir);
+                } else {
+                    return;
                 }
+
+                settings.set_int64 ("last-sync-time", new DateTime.now_utc ().to_unix ());
             } else {
                 print ("Mod time is null!");
             }
         } catch (Error e) {
             warning ("Failed to get file info: %s", e.message);
         }
-
-        settings.set_int64 ("last-sync-time", new DateTime.now_utc ().to_unix ());
     }
 
     public async void import (File dir) {
