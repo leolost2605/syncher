@@ -23,7 +23,12 @@ public class Syncher.HomeView : Gtk.Box {
         };
         image_overlay.add_overlay (emblem);
 
-        var label = new Gtk.Label (_("<span size='xx-large'><b>Nothing to do!</b></span>\nYou're all synchronized. To manually start a new synchronization click the button below.")) {
+        var label = new Gtk.Label (
+            "<span size='xx-large'><b>%s</b></span>\n%s".printf (
+                _("Nothing to do!"),
+                _("You're all synchronized. To manually start a new synchronization click the button below.")
+            )
+        ) {
             halign = CENTER,
             use_markup = true,
             justify = CENTER
