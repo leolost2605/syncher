@@ -37,15 +37,6 @@ public class Syncher.ProgressView : Gtk.Box {
             row_spacing = 12,
             column_homogeneous = true
         };
-        // grid.attach (first_progress_widget.stack, 1, 0, 1, 1);
-        // grid.attach (first_progress_widget.label_widget, 0, 1, 3, 1);
-        // grid.attach (first_progress_widget.progress_bar, 2, 0, 3, 1);
-        // grid.attach (second_progress_widget.stack, 5, 0, 1, 1);
-        // grid.attach (second_progress_widget.label_widget, 4, 1, 3, 1);
-        // grid.attach (second_progress_widget.progress_bar, 6, 0, 3, 1);
-        // grid.attach (third_progress_widget.stack, 9, 0, 1, 1);
-        // grid.attach (third_progress_widget.label_widget, 8, 1, 3, 1);
-        // grid.attach (third_progress_widget.progress_bar, 10, 0, 3, 1);
 
         var handle = new Gtk.WindowHandle () {
             child = grid,

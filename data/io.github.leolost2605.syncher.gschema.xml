@@ -16,6 +16,11 @@
       <summary>Most recent window size</summary>
       <description>Most recent window size (width, height)</description>
     </key>
+    <key name="sync-location" type="s">
+      <default>""</default>
+      <summary>Shared Location</summary>
+      <description>Shared location used to synchronize items between devices.</description>
+    </key>
     <key name="last-sync-time" type="x">
       <default>0</default>
       <summary>Most recent time configuration was imported from a remote location</summary>

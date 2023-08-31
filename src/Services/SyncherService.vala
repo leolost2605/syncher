@@ -11,6 +11,8 @@ public class Syncher.SyncherService : Object {
     public signal void finish_sync ();
 
     public enum ProgressStep {
+        SETUP,
+        PREPARING,
         LOADING_CONFIGURATION,
         INSTALLING_FLATPAKS,
         ADDING_REMOTES,
@@ -36,6 +38,8 @@ public class Syncher.SyncherService : Object {
 
     private Settings settings;
     private Cancellable cancellable;
+    private File sync_dir;
+    private uint timer_id = 0;
 
     construct {
         settings = new GLib.Settings ("io.github.leolost2605.syncher");
@@ -43,36 +47,55 @@ public class Syncher.SyncherService : Object {
 
         error.connect ((step, msg) => warning ("An error occured during %s: %s", step.to_string (), msg));
         fatal_error.connect ((step, msg) => warning ("An error occured during %s: %s", step.to_string (), msg));
+
+        var dir = File.new_for_uri (settings.get_string ("sync-location"));
+        setup_synchronization (dir);
+    }
+
+    public void setup_synchronization (File dir) {
+        if (!dir.query_exists ()) {
+            fatal_error (SETUP, "Synchronization directory doesn't exist.");
+            return;
+        }
+
+        if (timer_id != 0) {
+            Source.remove (timer_id);
+        }
+
+        sync_dir = dir;
+
+        sync.begin (sync_dir);
+
+        timer_id = Timeout.add_seconds (3600, () => {
+            sync.begin (sync_dir);
+            return Source.CONTINUE;
+        });
     }
 
     public async void sync (File dir, bool should_export = true) {
-        var file = dir.get_child (FLATPAKS_FILE_NAME);
-        if (file.query_exists ()) {
-            try {
-                var info = yield file.query_info_async ("*", NONE);
-                var mod_time = info.get_modification_date_time ();
-                if (mod_time != null) {
-                    var last_sync_time = new DateTime.from_unix_utc (settings.get_int64 ("last-sync-time"));
-                    if (mod_time.difference (last_sync_time) > TimeSpan.MINUTE) {
-                        import.begin (dir);
-                        settings.set_int64 ("last-sync-time", mod_time.to_unix ());
-                        print ("Import!");
-                        return;
-                    } else if (should_export) {
-                        print ("Export!");
-                        export.begin (dir);
-                    }
-                } else {
-                    print ("Mod time is null!");
+        if (!dir.query_exists ()) {
+            fatal_error (PREPARING, "Synchronization directory doesn't exist.");
+            return;
+        }
+
+        var last_sync_time = new DateTime.from_unix_utc (settings.get_int64 ("last-sync-time"));
+
+        try {
+            var info = yield dir.query_info_async ("*", NONE);
+            var mod_time = info.get_modification_date_time ();
+            if (mod_time != null) {
+                if (mod_time.difference (last_sync_time) > TimeSpan.MINUTE && mod_time.compare (last_sync_time) > 0) {
+                    import.begin (dir);
+                    print ("Import!");
+                } else if (should_export) {
+                    print ("Export!");
+                    export.begin (dir);
                 }
-            } catch (Error e) {
-                warning ("Failed to get file info: %s", e.message);
+            } else {
+                print ("Mod time is null!");
             }
-        } else {
-            print ("Sync dir not found!");
-            if (should_export) {
-                export.begin (dir);
-            }
+        } catch (Error e) {
+            warning ("Failed to get file info: %s", e.message);
         }
 
         settings.set_int64 ("last-sync-time", new DateTime.now_utc ().to_unix ());
