@@ -58,6 +58,8 @@ public class Syncher.SyncherService : Object {
             return;
         }
 
+        debug ("Setting up synchronization for directory with uri: %s", dir.get_uri ());
+
         if (timer_id != 0) {
             Source.remove (timer_id);
         }

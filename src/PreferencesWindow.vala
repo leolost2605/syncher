@@ -1,18 +1,21 @@
 public class Syncher.PreferencesWindow : Gtk.Window {
-
     public PreferencesWindow (Gtk.Window window) {
         Object (transient_for: window);
     }
 
     construct {
         var settings = new Settings ("io.github.leolost2605.syncher");
+        var mounts = new ListStore (typeof (Mount));
 
         var location_label = new Granite.HeaderLabel (_("Location")) {
             secondary_text = _("Shared location used to synchronize your devices.")
         };
 
-        var drop_down = new Gtk.DropDown (null, null) {
-            hexpand = true
+        var factory = new Gtk.SignalListItemFactory ();
+
+        var drop_down = new Gtk.DropDown (mounts, null) {
+            hexpand = true,
+            factory = factory
         };
 
         var items_label = new Granite.HeaderLabel (_("Items")) {
@@ -75,17 +78,52 @@ public class Syncher.PreferencesWindow : Gtk.Window {
         titlebar = new Gtk.Grid () { visible = false };
         present ();
 
-        var uris = new Gtk.StringList (null);
+        factory.bind.connect ((obj) => {
+            var item = (Gtk.ListItem) obj;
+            item.child = new Gtk.Label (((Mount) item.item).get_name ()) { halign = START };
+        });
+
         var volume_monitor = VolumeMonitor.get ();
         foreach (var mount in volume_monitor.get_mounts ()) {
-            uris.append (mount.get_default_location ().get_uri ());
-            var dir = mount.get_default_location ();
-            var test = File.new_build_filename (dir.get_path (), "test2");
-            try {
-                test.create (NONE, null);
-            } catch (Error e) {
-                warning ("Failed to creat file: %s", e.message);
+            mounts.append (mount);
+        }
+
+        drop_down.selected = Gtk.INVALID_LIST_POSITION;
+
+        var selected = settings.get_string ("sync-location");
+        if (selected != "") {
+            for (int i = 0; i < mounts.get_n_items (); i++) {
+                if (((Mount) mounts.get_item (i)).get_default_location ().get_uri () == selected) {
+                    drop_down.selected = i;
+                    break;
+                }
             }
         }
+
+        drop_down.notify["selected"].connect (() => {
+            if (drop_down.selected == Gtk.INVALID_LIST_POSITION) {
+                settings.set_string ("sync-location", "");
+                return;
+            }
+
+            var mount = (Mount) drop_down.selected_item;
+
+            var file = mount.get_default_location ();
+            settings.set_string ("sync-location", file.get_uri ());
+            SyncherService.get_default ().setup_synchronization (file);
+        });
+    }
+
+    private void get_sync_location () {
+        var file_chooser = new Gtk.FileChooserNative ("Choose location", (Gtk.Window) get_root (), SELECT_FOLDER, "Accept", "Cancel");
+        file_chooser.response.connect ((res) => {
+            if (res == Gtk.ResponseType.ACCEPT) {
+                var file = file_chooser.get_file ();
+                SyncherService.get_default ().setup_synchronization (file);
+            }
+            file_chooser.destroy ();
+        });
+
+        file_chooser.show ();
     }
 }
