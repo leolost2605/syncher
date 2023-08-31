@@ -30,16 +30,33 @@ public class Syncher.ProgressView : Gtk.Box {
         var grid = new Gtk.Grid () {
             hexpand = true,
             valign = CENTER,
-            margin_top = 12,
-            margin_start = 12,
-            margin_end = 12,
-            margin_bottom = 12,
             row_spacing = 12,
             column_homogeneous = true
         };
 
+        var label = new Gtk.Label (
+            "<span size='xx-large'><b>%s</b></span>\n<span weight='light'>%s</span>".printf (
+                _("Working..."),
+                _("Synchronizing this device with the remote location.")
+            )
+        ) {
+            halign = CENTER,
+            use_markup = true,
+            justify = CENTER
+        };
+
+        var box = new Gtk.Box (VERTICAL, 24) {
+            valign = CENTER,
+            margin_top = 12,
+            margin_start = 12,
+            margin_end = 12,
+            margin_bottom = 12
+        };
+        box.append (label);
+        box.append (grid);
+
         var handle = new Gtk.WindowHandle () {
-            child = grid,
+            child = box,
             vexpand = true
         };
 
@@ -90,6 +107,7 @@ public class Syncher.ProgressView : Gtk.Box {
                 grid.attach (progress_widget.stack, current + 1, 0, 1, 1);
                 grid.attach (progress_widget.label_widget, current, 1, 3, 1);
                 grid.attach (progress_widget.progress_bar, current + 2, 0, 3, 1);
+                grid.attach (progress_widget.error_info, current + 1, 2, 1, 1);
 
                 current += 4;
             }
@@ -106,11 +124,12 @@ public class Syncher.ProgressView : Gtk.Box {
         unmap.connect (() => {
             grid.remove_row (0);
             grid.remove_row (0);
+            grid.remove_row (0);
 
             completed_stack.set_visible_child_name ("step");
-            first_progress_widget.fraction = 0;
-            second_progress_widget.fraction = 0;
-            third_progress_widget.fraction = 0;
+            first_progress_widget.reset ();
+            second_progress_widget.reset ();
+            third_progress_widget.reset ();
             back_button.visible = false;
         });
 

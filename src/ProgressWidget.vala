@@ -6,6 +6,10 @@ public class ProgressWidget : Object {
     public Gtk.Stack stack { get; construct; }
     public Gtk.Label label_widget { get; construct; }
     public Gtk.ProgressBar progress_bar { get; construct; }
+    public Gtk.Revealer error_info { get; construct; }
+
+    public string error_msg { get; set; }
+    public string error_details { get; set; }
 
     public ProgressWidget (string step) {
         Object (step: step);
@@ -47,5 +51,23 @@ public class ProgressWidget : Object {
                 stack.set_visible_child (step_label);
             }
         });
+
+        var error_info_button = new Gtk.Button.from_icon_name ("dialog-information-symbolic");
+
+        error_info_button.clicked.connect (() => {
+            var err_dialog = new Granite.MessageDialog (_("An Error occured"), error_msg, new ThemedIcon (":"));
+            err_dialog.show_error_details (error_details);
+            err_dialog.present ();
+        });
+
+        error_info = new Gtk.Revealer () {
+            child = error_info_button,
+            reveal_child = true
+        };
+    }
+
+    public void reset () {
+        fraction = 0;
+        error_info.reveal_child = false;
     }
 }
