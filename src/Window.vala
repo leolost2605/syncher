@@ -4,6 +4,15 @@
  */
 
 public class Syncher.MainWindow : Gtk.ApplicationWindow {
+    public const string ACTION_GROUP_PREFIX = "win";
+    public const string ACTION_PREFIX = ACTION_GROUP_PREFIX + ".";
+    public const string ACTION_PREFERENCES = "preferences";
+
+    private const ActionEntry[] ACTION_ENTRIES = {
+        {ACTION_PREFERENCES, on_action_preferences }
+    };
+
+
     public MainWindow (Application application) {
         Object (
             application: application
@@ -11,6 +20,7 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
     }
 
     construct {
+        add_action_entries (ACTION_ENTRIES, this);
         // var uris = new Gtk.StringList (null);
         // var drop_down = new Gtk.DropDown (uris, null);
         // var volume_monitor = VolumeMonitor.get ();
@@ -49,13 +59,10 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
         syncher_service.start_sync.connect (() => {
             leaflet.visible_child = progress_view;
         });
+    }
 
-        syncher_service.finish_sync.connect (() => {
-            Timeout.add_seconds (2, () => {
-                leaflet.visible_child = home_view;
-                return Source.REMOVE;
-            });
-        });
+    private void on_action_preferences () {
+        new PreferencesWindow (this);
     }
 
     private void get_location () {

@@ -34,9 +34,11 @@ public class Syncher.SyncherService : Object {
     private const string FLATPAKS_FILE_NAME = ".installed-flatpaks";
     private const string DCONF_FILE_NAME = ".dconf-config";
 
+    private Settings settings;
     private Cancellable cancellable;
 
     construct {
+        settings = new GLib.Settings ("io.github.leolost2605.syncher");
         cancellable = new Cancellable ();
 
         error.connect ((step, msg) => warning ("An error occured during %s: %s", step.to_string (), msg));
@@ -44,7 +46,6 @@ public class Syncher.SyncherService : Object {
     }
 
     public async void sync (File dir, bool should_export = true) {
-        var settings = new GLib.Settings ("io.github.leolost2605.syncher");
         var file = dir.get_child (FLATPAKS_FILE_NAME);
         if (file.query_exists ()) {
             try {
@@ -80,12 +81,17 @@ public class Syncher.SyncherService : Object {
     public async void import (File dir) {
         start_sync (IMPORT);
 
-        var dconf_file = dir.get_child (DCONF_FILE_NAME);
-        yield load_saved_configuration (dconf_file);
-        var flatpak_remotes_file = dir.get_child (FLATPAK_REMOTES_FILE_NAME);
-        yield add_saved_flatpak_remotes (flatpak_remotes_file);
-        var flatpak_file = dir.get_child (FLATPAKS_FILE_NAME);
-        yield install_saved_flatpak_apps (flatpak_file);
+        if (settings.get_boolean ("sync-config")) {
+            var dconf_file = dir.get_child (DCONF_FILE_NAME);
+            yield load_saved_configuration (dconf_file);
+        }
+
+        if (settings.get_boolean ("sync-apps")) {
+            var flatpak_remotes_file = dir.get_child (FLATPAK_REMOTES_FILE_NAME);
+            yield add_saved_flatpak_remotes (flatpak_remotes_file);
+            var flatpak_file = dir.get_child (FLATPAKS_FILE_NAME);
+            yield install_saved_flatpak_apps (flatpak_file);
+        }
 
         finish_sync ();
     }
@@ -239,12 +245,17 @@ public class Syncher.SyncherService : Object {
     public async void export (File dir) {
         start_sync (EXPORT);
 
-        var dconf_file = dir.get_child (DCONF_FILE_NAME);
-        yield save_configuration (dconf_file);
-        var flatpak_remotes_file = dir.get_child (FLATPAK_REMOTES_FILE_NAME);
-        yield save_flatpak_remotes (flatpak_remotes_file);
-        var flatpak_file = dir.get_child (FLATPAKS_FILE_NAME);
-        yield save_flatpak_apps (flatpak_file);
+        if (settings.get_boolean ("sync-config")) {
+            var dconf_file = dir.get_child (DCONF_FILE_NAME);
+            yield save_configuration (dconf_file);
+        }
+
+        if (settings.get_boolean ("sync-apps")) {
+            var flatpak_remotes_file = dir.get_child (FLATPAK_REMOTES_FILE_NAME);
+            yield save_flatpak_remotes (flatpak_remotes_file);
+            var flatpak_file = dir.get_child (FLATPAKS_FILE_NAME);
+            yield save_flatpak_apps (flatpak_file);
+        }
 
         finish_sync ();
     }

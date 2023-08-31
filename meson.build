@@ -14,6 +14,7 @@ executable(
     'src' / 'Application.vala',
     'src' / 'HomeView.vala',
     'src' / 'Window.vala',
+    'src' / 'PreferencesWindow.vala',
     'src' / 'ProgressView.vala',
     'src' / 'ProgressWidget.vala',
     'src' / 'Services' / 'SyncherService.vala',
