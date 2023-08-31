@@ -13,11 +13,11 @@ public class Syncher.ProgressView : Gtk.Box {
         header_bar.add_css_class (Granite.STYLE_CLASS_FLAT);
         header_bar.pack_start (back_button);
 
-        var first_progress_widget = new ProgressWidget ("1");
+        var first_progress_widget = new ProgressWidget (CONFIG);
 
-        var second_progress_widget = new ProgressWidget ("2");
+        var second_progress_widget = new ProgressWidget (REMOTES);
 
-        var third_progress_widget = new ProgressWidget ("3");
+        var third_progress_widget = new ProgressWidget (APPS);
 
         ProgressWidget[] progress_widgets = {first_progress_widget, second_progress_widget, third_progress_widget};
 
@@ -127,29 +127,7 @@ public class Syncher.ProgressView : Gtk.Box {
             grid.remove_row (0);
 
             completed_stack.set_visible_child_name ("step");
-            first_progress_widget.reset ();
-            second_progress_widget.reset ();
-            third_progress_widget.reset ();
             back_button.visible = false;
-        });
-
-        syncher_service.progress.connect ((step, percentage) => {
-            switch (step) {
-                case SAVING_CONFIGURATION:
-                case LOADING_CONFIGURATION:
-                    first_progress_widget.fraction = (double) percentage / 100;
-                    break;
-
-                case SAVING_REMOTES:
-                case ADDING_REMOTES:
-                    second_progress_widget.fraction = (double) percentage / 100;
-                    break;
-
-                case SAVING_FLATPAKS:
-                case INSTALLING_FLATPAKS:
-                    third_progress_widget.fraction = (double) percentage / 100;
-                    break;
-            }
         });
     }
 }

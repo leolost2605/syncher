@@ -5,20 +5,17 @@
 
 public class Syncher.SyncherService : Object {
     public signal void fatal_error (ProgressStep step, string msg);
-    public signal void error (ProgressStep step, string msg);
+    public signal void error (ProgressStep step, string msg, string details);
     public signal void progress (ProgressStep step, int percentage);
     public signal void start_sync (SyncType sync_type);
     public signal void finish_sync ();
 
     public enum ProgressStep {
+        CONFIG = 0,
+        REMOTES = 1,
+        APPS = 2,
         SETUP,
-        PREPARING,
-        LOADING_CONFIGURATION,
-        INSTALLING_FLATPAKS,
-        ADDING_REMOTES,
-        SAVING_REMOTES,
-        SAVING_CONFIGURATION,
-        SAVING_FLATPAKS
+        PREPARING
     }
 
     public enum SyncType {
@@ -86,15 +83,15 @@ public class Syncher.SyncherService : Object {
             var info = yield dir.query_info_async ("*", NONE);
             var mod_time = info.get_modification_date_time ();
             if (mod_time != null) {
-                if (mod_time.compare (last_sync_time) > 0) {
+                // if (mod_time.compare (last_sync_time) > 0) {
                     yield import (dir);
                     print ("Import!");
-                } else if (should_export) {
-                    print ("Export!");
-                    yield export (dir);
-                } else {
-                    return;
-                }
+                // } else if (should_export) {
+                //     print ("Export!");
+                //     yield export (dir);
+                // } else {
+                //     return;
+                // }
 
                 settings.set_int64 ("last-sync-time", new DateTime.now_utc ().to_unix ());
             } else {
@@ -124,10 +121,10 @@ public class Syncher.SyncherService : Object {
     }
 
     private async void load_saved_configuration (File file) {
-        progress (LOADING_CONFIGURATION, 0);
+        progress (CONFIG, 0);
 
         if (!file.query_exists ()) {
-            fatal_error (LOADING_CONFIGURATION, "File doesn't exist.");
+            fatal_error (CONFIG, "File doesn't exist.");
             return;
         }
 
@@ -144,9 +141,9 @@ public class Syncher.SyncherService : Object {
             uint8[] contents;
             try {
                 yield file.load_contents_async (null, out contents, null);
-                progress (LOADING_CONFIGURATION, 50);
+                progress (CONFIG, 50);
             } catch (Error e) {
-                fatal_error (LOADING_CONFIGURATION, "Failed to load config file: %s".printf (e.message));
+                fatal_error (CONFIG, "Failed to load config file: %s".printf (e.message));
                 return;
             }
 
@@ -155,20 +152,20 @@ public class Syncher.SyncherService : Object {
 
             var stderr_data = Bytes.unref_to_data (stderr);
             if (stderr_data != null) {
-                fatal_error (LOADING_CONFIGURATION, "Failed to load saved configuration into dconf: %s".printf ((string) stderr_data));
+                fatal_error (CONFIG, "Failed to load saved configuration into dconf: %s".printf ((string) stderr_data));
             }
         } catch (Error e) {
-            fatal_error (LOADING_CONFIGURATION, "Failed to create dconf load subprocess: %s".printf (e.message));
+            fatal_error (CONFIG, "Failed to create dconf load subprocess: %s".printf (e.message));
         }
 
-        progress (LOADING_CONFIGURATION, 100);
+        progress (CONFIG, 100);
     }
 
     private async void add_saved_flatpak_remotes (File file) {
-        progress (ADDING_REMOTES, 0);
+        progress (REMOTES, 0);
 
         if (!file.query_exists ()) {
-            fatal_error (ADDING_REMOTES, "File doesn't exist.");
+            fatal_error (REMOTES, "File doesn't exist.");
             return;
         }
 
@@ -176,7 +173,7 @@ public class Syncher.SyncherService : Object {
         try {
             yield file.load_contents_async (cancellable, out contents, null);
         } catch (Error e) {
-            fatal_error (ADDING_REMOTES, "Failed to load file: %s".printf (e.message));
+            fatal_error (REMOTES, "Failed to load file: %s".printf (e.message));
             return;
         }
 
@@ -204,27 +201,31 @@ public class Syncher.SyncherService : Object {
 
                     var stderr_data = Bytes.unref_to_data (stderr);
                     if (stderr_data != null) {
-                        error (ADDING_REMOTES, "Failed to add flatpak remote '%s': %s".printf (remote, (string) stderr_data));
+                        error (REMOTES, _("Failed to add flatpak remote '%s'").printf (remote), (string) stderr_data);
                     }
                 } catch (Error e) {
-                    error (ADDING_REMOTES, "Failed to create flatpak remote-add subprocess: %s".printf (e.message));
+                    error (
+                        REMOTES,
+                        _("Failed to add flatpak remote '%s'").printf (remote),
+                        (string) "Failed to create flatpak remote-add subprocess: %s".printf (e.message)
+                    );
                 }
             } else {
-                error (ADDING_REMOTES, "Unknown parameters provided.");
+                error (REMOTES, _("Failed to add flatpak remote '%s'").printf (remote), "Unknown parameters provided.");
             }
 
             counter++;
-            progress (ADDING_REMOTES, (counter / remotes.length) * 100);
+            progress (REMOTES, (counter / remotes.length) * 100);
         }
 
-        progress (ADDING_REMOTES, 100);
+        progress (REMOTES, 100);
     }
 
     private async void install_saved_flatpak_apps (File file) {
-        progress (INSTALLING_FLATPAKS, 0);
+        progress (APPS, 0);
 
         if (!file.query_exists ()) {
-            fatal_error (INSTALLING_FLATPAKS, "File doesn't exist.");
+            fatal_error (APPS, "File doesn't exist.");
             return;
         }
 
@@ -232,7 +233,7 @@ public class Syncher.SyncherService : Object {
         try {
             yield file.load_contents_async (cancellable, out contents, null);
         } catch (Error e) {
-            fatal_error (INSTALLING_FLATPAKS, "Failed to load file: %s".printf (e.message));
+            fatal_error (APPS, "Failed to load file: %s".printf (e.message));
             return;
         }
 
@@ -256,17 +257,17 @@ public class Syncher.SyncherService : Object {
 
                 var stderr_data = Bytes.unref_to_data (stderr);
                 if (stderr_data != null) {
-                    error (INSTALLING_FLATPAKS, "Failed to install flatpak app '%s': %s".printf (app, (string) stderr_data));
+                    error (APPS, _("Failed to install flatpak app '%s'").printf (app), (string) stderr_data);
                 }
             } catch (Error e) {
-                error (INSTALLING_FLATPAKS, "Failed to create flatpak install subprocess: %s".printf (e.message));
+                error (APPS, _("Failed to install flatpak app '%s'").printf (app), "Failed to create flatpak install subprocess: %s".printf (e.message));
             }
 
             counter++;
-            progress (INSTALLING_FLATPAKS, (int) (((double) counter / (double) apps.length) * 100));
+            progress (APPS, (int) (((double) counter / (double) apps.length) * 100));
         }
 
-        progress (INSTALLING_FLATPAKS, 100);
+        progress (APPS, 100);
     }
 
     public async void export (File dir) {
@@ -288,7 +289,7 @@ public class Syncher.SyncherService : Object {
     }
 
     private async void save_configuration (File file) {
-        progress (SAVING_CONFIGURATION, 0);
+        progress (CONFIG, 0);
 
         try {
             var subprocess = new Subprocess (
@@ -304,28 +305,28 @@ public class Syncher.SyncherService : Object {
             Bytes stdout;
             yield subprocess.communicate_async (null, null, out stdout, out stderr);
 
-            progress (SAVING_CONFIGURATION, 50);
+            progress (CONFIG, 50);
 
             var stderr_data = Bytes.unref_to_data (stderr);
             var stdout_data = Bytes.unref_to_data (stdout);
             if (stderr_data != null) {
-                fatal_error (SAVING_CONFIGURATION, "Failed to get current configuration from dconf: %s".printf ((string) stderr_data));
+                fatal_error (CONFIG, "Failed to get current configuration from dconf: %s".printf ((string) stderr_data));
             } else if (stdout_data != null) {
                 try {
                     yield file.replace_contents_async (stdout_data, null, false, REPLACE_DESTINATION, null, null);
                 } catch (Error e) {
-                    fatal_error (SAVING_CONFIGURATION, "Failed to replace file contents: %s".printf (e.message));
+                    fatal_error (CONFIG, "Failed to replace file contents: %s".printf (e.message));
                 }
             }
         } catch (Error e) {
-            fatal_error (SAVING_CONFIGURATION, "Failed to create subprocess: %s".printf (e.message));
+            fatal_error (CONFIG, "Failed to create subprocess: %s".printf (e.message));
         }
 
-        progress (SAVING_CONFIGURATION, 100);
+        progress (CONFIG, 100);
     }
 
     private async void save_flatpak_remotes (File file) {
-        progress (SAVING_REMOTES, 0);
+        progress (REMOTES, 0);
 
         try {
             var subprocess = new Subprocess (
@@ -342,28 +343,28 @@ public class Syncher.SyncherService : Object {
             Bytes stdout;
             yield subprocess.communicate_async (null, null, out stdout, out stderr);
 
-            progress (SAVING_REMOTES, 50);
+            progress (REMOTES, 50);
 
             var stderr_data = Bytes.unref_to_data (stderr);
             var stdout_data = Bytes.unref_to_data (stdout);
             if (stderr_data != null) {
-                fatal_error (SAVING_REMOTES, "Failed to save flatpak remotes: %s".printf ((string) stderr_data));
+                fatal_error (REMOTES, "Failed to save flatpak remotes: %s".printf ((string) stderr_data));
             } else if (stdout_data != null) {
                 try {
                     yield file.replace_contents_async (stdout_data, null, false, REPLACE_DESTINATION, null, null);
                 } catch (Error e) {
-                    fatal_error (SAVING_REMOTES, "Failed to replace contents: %s".printf (e.message));
+                    fatal_error (REMOTES, "Failed to replace contents: %s".printf (e.message));
                 }
             }
         } catch (Error e) {
-            fatal_error (SAVING_REMOTES, "Failed to create subprocess: %s".printf (e.message));
+            fatal_error (REMOTES, "Failed to create subprocess: %s".printf (e.message));
         }
 
-        progress (SAVING_REMOTES, 100);
+        progress (REMOTES, 100);
     }
 
     private async void save_flatpak_apps (File file) {
-        progress (SAVING_FLATPAKS, 0);
+        progress (APPS, 0);
 
         try {
             var subprocess = new Subprocess (
@@ -380,23 +381,23 @@ public class Syncher.SyncherService : Object {
             Bytes stdout;
             yield subprocess.communicate_async (null, null, out stdout, out stderr);
 
-            progress (SAVING_FLATPAKS, 50);
+            progress (APPS, 50);
 
             var stderr_data = Bytes.unref_to_data (stderr);
             var stdout_data = Bytes.unref_to_data (stdout);
             if (stderr_data != null) {
-                fatal_error (SAVING_FLATPAKS, "Failed to save flatpak apps: %s".printf ((string) stderr_data));
+                fatal_error (APPS, "Failed to save flatpak apps: %s".printf ((string) stderr_data));
             } else if (stdout_data != null) {
                 try {
                     yield file.replace_contents_async (stdout_data, null, false, REPLACE_DESTINATION, null, null);
                 } catch (Error e) {
-                    fatal_error (SAVING_FLATPAKS, "Failed to replace contents: %s".printf (e.message));
+                    fatal_error (APPS, "Failed to replace contents: %s".printf (e.message));
                 }
             }
         } catch (Error e) {
-            fatal_error (SAVING_FLATPAKS, "Failed to create subprocess: %s".printf (e.message));
+            fatal_error (APPS, "Failed to create subprocess: %s".printf (e.message));
         }
 
-        progress (SAVING_FLATPAKS, 100);
+        progress (APPS, 100);
     }
 }
