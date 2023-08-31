@@ -1,11 +1,23 @@
 public class Syncher.HomeView : Gtk.Box {
     construct {
+        var menu = new Menu ();
+        menu.append (_("Preferences"), MainWindow.ACTION_PREFIX + MainWindow.ACTION_PREFERENCES);
+
+        var menu_button = new Gtk.MenuButton () {
+            icon_name = "open-menu",
+            menu_model = menu,
+            primary = true,
+            tooltip_markup = Granite.markup_accel_tooltip ({"F10"}, "Menu")
+        };
+        menu_button.add_css_class (Granite.STYLE_CLASS_LARGE_ICONS);
+
         var header_bar = new Gtk.HeaderBar () {
             title_widget = new Gtk.Grid (),
             hexpand = true,
             valign = START
         };
         header_bar.add_css_class (Granite.STYLE_CLASS_FLAT);
+        header_bar.pack_end (menu_button);
 
         var emblem = new Gtk.Image.from_icon_name ("emblem-default") {
             halign = END,
@@ -23,7 +35,12 @@ public class Syncher.HomeView : Gtk.Box {
         };
         image_overlay.add_overlay (emblem);
 
-        var label = new Gtk.Label (_("<span size='xx-large'><b>Nothing to do!</b></span>\nYou're all synchronized. To manually start a new synchronization click the button below.")) {
+        var label = new Gtk.Label (
+            "<span size='xx-large'><b>%s</b></span>\n<span weight='light'>%s</span>".printf (
+                _("Nothing to do!"),
+                _("You're all synchronized. To manually start a new synchronization click the button below.")
+            )
+        ) {
             halign = CENTER,
             use_markup = true,
             justify = CENTER
@@ -50,7 +67,13 @@ public class Syncher.HomeView : Gtk.Box {
         sync_now_stack.add_child (sync_now);
         sync_now_stack.add_child (preparing_sync);
 
-        var box = new Gtk.Box (VERTICAL, 12) {
+        var top_box = new Gtk.Box (VERTICAL, 3) {
+            halign = CENTER
+        };
+        top_box.append (image_overlay);
+        top_box.append (label);
+
+        var box = new Gtk.Box (VERTICAL, 24) {
             halign = CENTER,
             valign = CENTER,
             margin_top = 12,
@@ -58,8 +81,7 @@ public class Syncher.HomeView : Gtk.Box {
             margin_end = 12,
             margin_bottom = 12
         };
-        box.append (image_overlay);
-        box.append (label);
+        box.append (top_box);
         box.append (sync_now_stack);
 
         var handle = new Gtk.WindowHandle () {

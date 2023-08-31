@@ -16,10 +16,25 @@
       <summary>Most recent window size</summary>
       <description>Most recent window size (width, height)</description>
     </key>
+    <key name="sync-location" type="s">
+      <default>""</default>
+      <summary>Shared Location</summary>
+      <description>Shared location used to synchronize items between devices.</description>
+    </key>
     <key name="last-sync-time" type="x">
       <default>0</default>
       <summary>Most recent time configuration was imported from a remote location</summary>
       <description>Most recent time configuration was exported from this device in unix time.</description>
+    </key>
+    <key name="sync-apps" type="b">
+      <default>true</default>
+      <summary>Synchronize Applications</summary>
+      <description>Whether applications should be synchronized across devices.</description>
+    </key>
+    <key name="sync-config" type="b">
+      <default>true</default>
+      <summary>Synchronize Configuration</summary>
+      <description>Whether configuration should be synchronized across devices.</description>
     </key>
   </schema>
 </schemalist>
