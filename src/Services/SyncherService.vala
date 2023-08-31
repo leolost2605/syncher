@@ -83,15 +83,15 @@ public class Syncher.SyncherService : Object {
             var info = yield dir.query_info_async ("*", NONE);
             var mod_time = info.get_modification_date_time ();
             if (mod_time != null) {
-                // if (mod_time.compare (last_sync_time) > 0) {
+                if (mod_time.compare (last_sync_time) > 0) {
                     yield import (dir);
                     print ("Import!");
-                // } else if (should_export) {
-                //     print ("Export!");
-                //     yield export (dir);
-                // } else {
-                //     return;
-                // }
+                } else if (should_export) {
+                    print ("Export!");
+                    yield export (dir);
+                } else {
+                    return;
+                }
 
                 settings.set_int64 ("last-sync-time", new DateTime.now_utc ().to_unix ());
             } else {
