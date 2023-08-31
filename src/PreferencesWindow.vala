@@ -47,9 +47,7 @@ public class Syncher.PreferencesWindow : Gtk.Window {
             margin_start = 12,
             margin_end = 12,
             column_spacing = 6,
-            row_spacing = 6,
-            halign = CENTER,
-            valign = CENTER
+            row_spacing = 6
         };
         grid.attach (location_label, 0, 0, 2);
         grid.attach (drop_down, 0, 1, 2);
@@ -59,23 +57,49 @@ public class Syncher.PreferencesWindow : Gtk.Window {
         grid.attach (config_label, 0, 4);
         grid.attach (config_switch, 1, 4);
 
+        var interval_label = new Granite.HeaderLabel (_("Interval")) {
+            secondary_text = _("How often this device should synchronize with the remote location.")
+        };
+
+        // var factory = new Gtk.SignalListItemFactory ();
+
+        // var drop_down = new Gtk.DropDown (mounts, null) {
+        //     hexpand = true,
+        //     factory = factory
+        // };
+
+        var sync_grid = new Gtk.Grid () {
+            margin_top = 12,
+            margin_bottom = 12,
+            margin_start = 12,
+            margin_end = 12,
+            column_spacing = 6,
+            row_spacing = 6
+        };
+        sync_grid.attach (interval_label, 0, 0, 2);
+        // sync_grid.attach (drop_down, 0, 1, 2);
+
+        var stack = new Gtk.Stack ();
+        stack.add_titled (grid, null, _("General"));
+        stack.add_titled (sync_grid, null, _("Synchronization"));
+
+        var switcher = new Gtk.StackSwitcher () {
+            stack = stack
+        };
+        ((Gtk.BoxLayout) switcher.layout_manager).homogeneous = true;
+
         var header_bar = new Gtk.HeaderBar () {
-            title_widget = new Gtk.Grid (),
+            title_widget = switcher,
             hexpand = true,
             valign = START
         };
         header_bar.add_css_class (Granite.STYLE_CLASS_FLAT);
 
-        var overlay = new Gtk.Overlay () {
-            child = grid
-        };
-        overlay.add_overlay (header_bar);
-
-        default_height = 290;
-        default_width = 300;
+        default_height = 400;
+        default_width = 400;
         resizable = false;
-        child = overlay;
-        titlebar = new Gtk.Grid () { visible = false };
+        child = stack;
+        titlebar = header_bar;
         present ();
 
         factory.bind.connect ((obj) => {
