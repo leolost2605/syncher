@@ -58,13 +58,13 @@ public class Syncher.ProgressView : Gtk.Box {
 
         syncher_service.start_sync.connect ((sync_type) => {
             if (sync_type == IMPORT) {
-                first_progress_widget.label = _("Adding Software Sources");
-                second_progress_widget.label = _("Installing Apps");
-                third_progress_widget.label = _("Loading Configuration");
+                first_progress_widget.label = _("Loading Configuration");
+                second_progress_widget.label = _("Adding Software Sources");
+                third_progress_widget.label = _("Installing Apps");
             } else {
-                first_progress_widget.label = _("Saving Software Sources");
-                second_progress_widget.label = _("Saving Apps");
-                third_progress_widget.label = _("Saving Configuration");
+                first_progress_widget.label = _("Saving Configuration");
+                second_progress_widget.label = _("Saving Software Sources");
+                third_progress_widget.label = _("Saving Apps");
             }
         });
 
@@ -79,18 +79,18 @@ public class Syncher.ProgressView : Gtk.Box {
 
         syncher_service.progress.connect ((step, percentage) => {
             switch (step) {
+                case SAVING_CONFIGURATION:
+                case LOADING_CONFIGURATION:
+                    first_progress_widget.fraction = (double) percentage / 100;
+                    break;
+
                 case SAVING_REMOTES:
                 case ADDING_REMOTES:
-                    first_progress_widget.fraction = (double) percentage / 100;
+                    second_progress_widget.fraction = (double) percentage / 100;
                     break;
 
                 case SAVING_FLATPAKS:
                 case INSTALLING_FLATPAKS:
-                    second_progress_widget.fraction = (double) percentage / 100;
-                    break;
-
-                case SAVING_CONFIGURATION:
-                case LOADING_CONFIGURATION:
                     third_progress_widget.fraction = (double) percentage / 100;
                     break;
             }

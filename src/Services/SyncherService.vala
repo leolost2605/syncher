@@ -80,14 +80,55 @@ public class Syncher.SyncherService : Object {
     public async void import (File dir) {
         start_sync (IMPORT);
 
+        var dconf_file = dir.get_child (DCONF_FILE_NAME);
+        yield load_saved_configuration (dconf_file);
         var flatpak_remotes_file = dir.get_child (FLATPAK_REMOTES_FILE_NAME);
         yield add_saved_flatpak_remotes (flatpak_remotes_file);
         var flatpak_file = dir.get_child (FLATPAKS_FILE_NAME);
         yield install_saved_flatpak_apps (flatpak_file);
-        var dconf_file = dir.get_child (DCONF_FILE_NAME);
-        yield load_saved_configuration (dconf_file);
 
         finish_sync ();
+    }
+
+    private async void load_saved_configuration (File file) {
+        progress (LOADING_CONFIGURATION, 0);
+
+        if (!file.query_exists ()) {
+            fatal_error (LOADING_CONFIGURATION, "File doesn't exist.");
+            return;
+        }
+
+        try {
+            var subprocess = new Subprocess (
+                STDIN_PIPE | STDERR_PIPE,
+                "flatpak-spawn",
+                "--host",
+                "dconf",
+                "load",
+                "/"
+            );
+
+            uint8[] contents;
+            try {
+                yield file.load_contents_async (null, out contents, null);
+                progress (LOADING_CONFIGURATION, 50);
+            } catch (Error e) {
+                fatal_error (LOADING_CONFIGURATION, "Failed to load config file: %s".printf (e.message));
+                return;
+            }
+
+            Bytes stderr;
+            yield subprocess.communicate_async (new Bytes (contents), null, null, out stderr);
+
+            var stderr_data = Bytes.unref_to_data (stderr);
+            if (stderr_data != null) {
+                fatal_error (LOADING_CONFIGURATION, "Failed to load saved configuration into dconf: %s".printf ((string) stderr_data));
+            }
+        } catch (Error e) {
+            fatal_error (LOADING_CONFIGURATION, "Failed to create dconf load subprocess: %s".printf (e.message));
+        }
+
+        progress (LOADING_CONFIGURATION, 100);
     }
 
     private async void add_saved_flatpak_remotes (File file) {
@@ -143,7 +184,7 @@ public class Syncher.SyncherService : Object {
             progress (ADDING_REMOTES, (counter / remotes.length) * 100);
         }
 
-        progress (INSTALLING_FLATPAKS, 100);
+        progress (ADDING_REMOTES, 100);
     }
 
     private async void install_saved_flatpak_apps (File file) {
@@ -195,58 +236,54 @@ public class Syncher.SyncherService : Object {
         progress (INSTALLING_FLATPAKS, 100);
     }
 
-    private async void load_saved_configuration (File file) {
-        progress (LOADING_CONFIGURATION, 0);
-
-        if (!file.query_exists ()) {
-            fatal_error (LOADING_CONFIGURATION, "File doesn't exist.");
-            return;
-        }
-
-        try {
-            var subprocess = new Subprocess (
-                STDIN_PIPE | STDERR_PIPE,
-                "flatpak-spawn",
-                "--host",
-                "dconf",
-                "load",
-                "/"
-            );
-
-            uint8[] contents;
-            try {
-                yield file.load_contents_async (null, out contents, null);
-                progress (LOADING_CONFIGURATION, 50);
-            } catch (Error e) {
-                fatal_error (LOADING_CONFIGURATION, "Failed to load config file: %s".printf (e.message));
-                return;
-            }
-
-            Bytes stderr;
-            yield subprocess.communicate_async (new Bytes (contents), null, null, out stderr);
-
-            var stderr_data = Bytes.unref_to_data (stderr);
-            if (stderr_data != null) {
-                fatal_error (LOADING_CONFIGURATION, "Failed to load saved configuration into dconf: %s".printf ((string) stderr_data));
-            }
-        } catch (Error e) {
-            fatal_error (LOADING_CONFIGURATION, "Failed to create dconf load subprocess: %s".printf (e.message));
-        }
-
-        progress (LOADING_CONFIGURATION, 100);
-    }
-
     public async void export (File dir) {
         start_sync (EXPORT);
 
+        var dconf_file = dir.get_child (DCONF_FILE_NAME);
+        yield save_configuration (dconf_file);
         var flatpak_remotes_file = dir.get_child (FLATPAK_REMOTES_FILE_NAME);
         yield save_flatpak_remotes (flatpak_remotes_file);
         var flatpak_file = dir.get_child (FLATPAKS_FILE_NAME);
         yield save_flatpak_apps (flatpak_file);
-        var dconf_file = dir.get_child (DCONF_FILE_NAME);
-        yield save_configuration (dconf_file);
 
         finish_sync ();
+    }
+
+    private async void save_configuration (File file) {
+        progress (SAVING_CONFIGURATION, 0);
+
+        try {
+            var subprocess = new Subprocess (
+                STDERR_PIPE | STDOUT_PIPE,
+                "flatpak-spawn",
+                "--host",
+                "dconf",
+                "dump",
+                "/"
+            );
+
+            Bytes stderr;
+            Bytes stdout;
+            yield subprocess.communicate_async (null, null, out stdout, out stderr);
+
+            progress (SAVING_CONFIGURATION, 50);
+
+            var stderr_data = Bytes.unref_to_data (stderr);
+            var stdout_data = Bytes.unref_to_data (stdout);
+            if (stderr_data != null) {
+                fatal_error (SAVING_CONFIGURATION, "Failed to get current configuration from dconf: %s".printf ((string) stderr_data));
+            } else if (stdout_data != null) {
+                try {
+                    yield file.replace_contents_async (stdout_data, null, false, REPLACE_DESTINATION, null, null);
+                } catch (Error e) {
+                    fatal_error (SAVING_CONFIGURATION, "Failed to replace file contents: %s".printf (e.message));
+                }
+            }
+        } catch (Error e) {
+            fatal_error (SAVING_CONFIGURATION, "Failed to create subprocess: %s".printf (e.message));
+        }
+
+        progress (SAVING_CONFIGURATION, 100);
     }
 
     private async void save_flatpak_remotes (File file) {
@@ -267,7 +304,7 @@ public class Syncher.SyncherService : Object {
             Bytes stdout;
             yield subprocess.communicate_async (null, null, out stdout, out stderr);
 
-            progress (SAVING_FLATPAKS, 50);
+            progress (SAVING_REMOTES, 50);
 
             var stderr_data = Bytes.unref_to_data (stderr);
             var stdout_data = Bytes.unref_to_data (stdout);
@@ -284,7 +321,7 @@ public class Syncher.SyncherService : Object {
             fatal_error (SAVING_REMOTES, "Failed to create subprocess: %s".printf (e.message));
         }
 
-        progress (SAVING_FLATPAKS, 100);
+        progress (SAVING_REMOTES, 100);
     }
 
     private async void save_flatpak_apps (File file) {
@@ -323,42 +360,5 @@ public class Syncher.SyncherService : Object {
         }
 
         progress (SAVING_FLATPAKS, 100);
-    }
-
-    private async void save_configuration (File file) {
-        progress (SAVING_CONFIGURATION, 0);
-
-        try {
-            var subprocess = new Subprocess (
-                STDERR_PIPE | STDOUT_PIPE,
-                "flatpak-spawn",
-                "--host",
-                "dconf",
-                "dump",
-                "/"
-            );
-
-            Bytes stderr;
-            Bytes stdout;
-            yield subprocess.communicate_async (null, null, out stdout, out stderr);
-
-            progress (SAVING_CONFIGURATION, 50);
-
-            var stderr_data = Bytes.unref_to_data (stderr);
-            var stdout_data = Bytes.unref_to_data (stdout);
-            if (stderr_data != null) {
-                fatal_error (SAVING_CONFIGURATION, "Failed to get current configuration from dconf: %s".printf ((string) stderr_data));
-            } else if (stdout_data != null) {
-                try {
-                    yield file.replace_contents_async (stdout_data, null, false, REPLACE_DESTINATION, null, null);
-                } catch (Error e) {
-                    fatal_error (SAVING_CONFIGURATION, "Failed to replace file contents: %s".printf (e.message));
-                }
-            }
-        } catch (Error e) {
-            fatal_error (SAVING_CONFIGURATION, "Failed to create subprocess: %s".printf (e.message));
-        }
-
-        progress (SAVING_CONFIGURATION, 100);
     }
 }
