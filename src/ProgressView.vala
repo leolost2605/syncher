@@ -36,7 +36,7 @@ public class Syncher.ProgressView : Gtk.Box {
 
         var label = new Gtk.Label (
             "<span size='xx-large'><b>%s</b></span>\n<span weight='light'>%s</span>".printf (
-                _("Working..."),
+                _("Working…"),
                 _("Synchronizing this device with the remote location.")
             )
         ) {
@@ -116,12 +116,21 @@ public class Syncher.ProgressView : Gtk.Box {
             grid.attach (completed_label, current, 1, 3, 1);
         });
 
+        syncher_service.fatal_error.connect ((step, msg, details) => {
+            if (step != SETUP && step != PREPARING) {
+                return;
+            }
+
+            grid.sensitive = false;
+        });
+
         syncher_service.finish_sync.connect (() => {
             completed_stack.set_visible_child_name ("emblem");
             back_button.visible = true;
         });
 
         unmap.connect (() => {
+            grid.sensitive = true;
             grid.remove_row (0);
             grid.remove_row (0);
             grid.remove_row (0);
