@@ -179,9 +179,8 @@ public class Syncher.SyncherService : Object {
 
         var remotes = ((string) contents).split_set ("\n");
 
-        int counter = 0;
-        foreach (var remote in remotes) {
-            var parts = remote.split_set ("\t");
+        for (int i = 0; i < remotes.length - 1; i++) {
+            var parts = remotes[i].split_set ("\t");
 
             if (parts.length == 2) {
                 try {
@@ -201,21 +200,20 @@ public class Syncher.SyncherService : Object {
 
                     var stderr_data = Bytes.unref_to_data (stderr);
                     if (stderr_data != null) {
-                        error (REMOTES, _("Failed to add flatpak remote '%s'").printf (remote), (string) stderr_data);
+                        error (REMOTES, _("Failed to add flatpak remote '%s'").printf (remotes[i]), (string) stderr_data);
                     }
                 } catch (Error e) {
                     error (
                         REMOTES,
-                        _("Failed to add flatpak remote '%s'").printf (remote),
+                        _("Failed to add flatpak remote '%s'").printf (remotes[i]),
                         (string) "Failed to create flatpak remote-add subprocess: %s".printf (e.message)
                     );
                 }
             } else {
-                error (REMOTES, _("Failed to add flatpak remote '%s'").printf (remote), "Unknown parameters provided.");
+                error (REMOTES, _("Failed to add flatpak remote '%s'").printf (remotes[i]), "Unknown parameters provided.");
             }
 
-            counter++;
-            progress (REMOTES, (counter / remotes.length) * 100);
+            progress (REMOTES, (i / remotes.length) * 100);
         }
 
         progress (REMOTES, 100);
@@ -249,6 +247,7 @@ public class Syncher.SyncherService : Object {
                     "flatpak",
                     "install",
                     "-y",
+                    "--noninteractive",
                     app
                 );
 

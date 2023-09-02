@@ -92,6 +92,10 @@ public class Syncher.ProgressWidget : Object {
 
             progress_bar.fraction = (double) percentage / 100;
 
+            if (stack.visible_child == fatal_image) {
+                return;
+            }
+
             if (percentage == 100) {
                 stack.set_visible_child (image);
             } else if (percentage > 0) {
