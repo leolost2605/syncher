@@ -4,7 +4,7 @@
  */
 
 public class Syncher.SyncherService : Object {
-    public signal void fatal_error (ProgressStep step, string msg);
+    public signal void fatal_error (ProgressStep step, string msg, string details = "");
     public signal void error (ProgressStep step, string msg, string details);
     public signal void progress (ProgressStep step, int percentage);
     public signal void start_sync (SyncType sync_type);

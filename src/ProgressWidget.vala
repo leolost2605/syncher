@@ -7,6 +7,8 @@ public class Syncher.ProgressWidget : Object {
     public Gtk.ProgressBar progress_bar { get; construct; }
     public Gtk.Revealer error_info { get; construct; }
 
+    private Gtk.ListBox error_dialog_list;
+
     public ProgressWidget (SyncherService.ProgressStep step) {
         Object (step: step);
     }
@@ -24,10 +26,15 @@ public class Syncher.ProgressWidget : Object {
             use_markup = true
         };
 
+        var fatal_image = new Gtk.Image.from_icon_name ("dialog-error") {
+            pixel_size = 32
+        };
+
         stack = new Gtk.Stack ();
         stack.add_child (step_label);
         stack.add_child (spinner);
         stack.add_child (image);
+        stack.add_child (fatal_image);
 
         label_widget = new Gtk.Label (label);
         bind_property ("label", label_widget, "label", SYNC_CREATE);
@@ -51,7 +58,7 @@ public class Syncher.ProgressWidget : Object {
         header_bar.add_css_class (Granite.STYLE_CLASS_FLAT);
         header_bar.add_css_class (Granite.STYLE_CLASS_DEFAULT_DECORATION);
 
-        var error_dialog_list = new Gtk.ListBox () {
+        error_dialog_list = new Gtk.ListBox () {
             margin_start = 3,
             margin_end = 3,
             margin_top = 3,
@@ -99,23 +106,23 @@ public class Syncher.ProgressWidget : Object {
 
             error_info.reveal_child = true;
 
-            var details_label = new Gtk.Label (details) {
-                wrap = true,
-                wrap_mode = WORD_CHAR
-            };
-            details_label.add_css_class (Granite.STYLE_CLASS_TERMINAL);
+            add_error_details (msg, details);
+        });
 
-            var expander = new Gtk.Expander (msg) {
-                child = details_label,
-                hexpand = true,
-                margin_top = 3,
-                margin_bottom = 3
-            };
+        syncher_service.fatal_error.connect ((_step, msg, details) => {
+            if (_step != step) {
+                return;
+            }
 
-            error_dialog_list.append (expander);
+            stack.set_visible_child (fatal_image);
+            error_info.reveal_child = true;
+            progress_bar.sensitive = false;
+
+            add_error_details (msg, details);
         });
 
         progress_bar.unmap.connect (() => {
+            progress_bar.sensitive = true;
             progress_bar.fraction = 0;
             error_info.reveal_child = false;
             stack.set_visible_child (step_label);
@@ -124,5 +131,22 @@ public class Syncher.ProgressWidget : Object {
         error_info_button.clicked.connect (() => {
             error_dialog.present ();
         });
+    }
+
+    private void add_error_details (string msg, string details) {
+        var details_label = new Gtk.Label (details) {
+            wrap = true,
+            wrap_mode = WORD_CHAR
+        };
+        details_label.add_css_class (Granite.STYLE_CLASS_TERMINAL);
+
+        var expander = new Gtk.Expander (_("Fatal error: %s").printf (msg)) {
+            child = details_label,
+            hexpand = true,
+            margin_top = 3,
+            margin_bottom = 3
+        };
+
+        error_dialog_list.append (expander);
     }
 }
