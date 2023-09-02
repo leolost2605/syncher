@@ -37,7 +37,7 @@ public class Syncher.ProgressView : Gtk.Box {
         var label = new Gtk.Label (
             "<span size='xx-large'><b>%s</b></span>\n<span weight='light'>%s</span>".printf (
                 _("Working…"),
-                _("Synchronizing this device with the remote location.")
+                _("Depending on your internet connection and number of apps, this can take a while.")
             )
         ) {
             halign = CENTER,

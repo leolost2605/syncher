@@ -342,7 +342,7 @@ public class Syncher.SyncherService : Object {
                 "--host",
                 "flatpak",
                 "remotes",
-                "--installation=default",
+                "--user",
                 "--columns=name,url"
             );
 
