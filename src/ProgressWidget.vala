@@ -118,7 +118,7 @@ public class Syncher.ProgressWidget : Object {
             error_info.reveal_child = true;
             progress_bar.sensitive = false;
 
-            add_error_details (msg, details);
+            add_error_details (msg, details, true);
         });
 
         progress_bar.unmap.connect (() => {
@@ -133,14 +133,14 @@ public class Syncher.ProgressWidget : Object {
         });
     }
 
-    private void add_error_details (string msg, string details) {
+    private void add_error_details (string msg, string details, bool fatal = false) {
         var details_label = new Gtk.Label (details) {
             wrap = true,
             wrap_mode = WORD_CHAR
         };
         details_label.add_css_class (Granite.STYLE_CLASS_TERMINAL);
 
-        var expander = new Gtk.Expander (_("Fatal error: %s").printf (msg)) {
+        var expander = new Gtk.Expander (fatal ? _("Fatal error: %s").printf (msg) : msg) {
             child = details_label,
             hexpand = true,
             margin_top = 3,
