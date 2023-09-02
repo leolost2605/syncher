@@ -59,7 +59,7 @@ public class Syncher.HomeView : Gtk.Box {
             halign = CENTER
         };
         preparing_sync.append (new Gtk.Spinner () {spinning = true});
-        preparing_sync.append (new Gtk.Label (_("Preparing sync...")));
+        preparing_sync.append (new Gtk.Label (_("Preparing sync…")));
 
         var sync_now_stack = new Gtk.Stack () {
             margin_top = 12
