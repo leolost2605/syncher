@@ -30,6 +30,7 @@ public class Syncher.SyncherService : Object {
 
     public Error? error_state { get; private set; default = null; }
     public File sync_dir { get; private set; }
+    public HashTable<string, Module> modules { get; set; }
 
     private const string FLATPAK_REMOTES_FILE_NAME = ".flatpak-remotes";
     private const string FLATPAKS_FILE_NAME = ".installed-flatpaks";
@@ -45,6 +46,9 @@ public class Syncher.SyncherService : Object {
 
         error.connect ((step, msg) => warning ("An error occured during %s: %s", step.to_string (), msg));
         fatal_error.connect ((step, msg) => warning ("An error occured during %s: %s", step.to_string (), msg));
+        modules = new HashTable<string, Module> (str_hash, str_equal);
+        var dmod = new DconfModule ();
+        modules[dmod.id] = dmod;
     }
 
     public void setup_saved_synchronization () {
@@ -118,7 +122,7 @@ public class Syncher.SyncherService : Object {
     public async void import (File dir) {
         start_sync (IMPORT);
 
-        if (settings.get_boolean ("sync-config")) {	
+        if (settings.get_boolean ("sync-config")) {
             var dconf_file = dir.get_child (DCONF_FILE_NAME);
             yield load_saved_configuration (dconf_file);
         }
