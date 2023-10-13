@@ -41,9 +41,7 @@ public class Syncher.ProgressWidget : Object {
         stack.add_child (image);
         stack.add_child (fatal_image);
 
-        label_widget = new Gtk.Label (sync_type == IMPORT ? module.import_label : module.export_label) {
-            // label =
-        };
+        label_widget = new Gtk.Label (sync_type == IMPORT ? module.import_label : module.export_label);
 
         progress_bar = new Gtk.ProgressBar () {
             hexpand = true,

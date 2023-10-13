@@ -6,6 +6,7 @@ public interface Syncher.Module : Object {
     public abstract string import_label { get; set; }
     public abstract string export_label { get; set; }
     public abstract string id { get; set; }
+    public abstract bool enabled { get; set; }
 
     public abstract async void import (File file);
     public abstract async void export (File file);

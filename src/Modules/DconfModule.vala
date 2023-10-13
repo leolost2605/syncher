@@ -2,10 +2,11 @@ public class Syncher.DconfModule : Object, Module {
     public string import_label { get; set; }
     public string export_label { get; set; }
     public string id { get; set; }
+    public bool enabled { get; set; default = true; }
 
     construct {
-        import_label = "Config";
-        export_label = "Config";
+        import_label = _("Loading Configuration");
+        export_label = _("Saving Configuration");
         id = "dconf";
     }
 

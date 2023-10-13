@@ -20,7 +20,9 @@ executable(
     'src' / 'ProgressWidget.vala',
     'src' / 'Core' / 'SyncherService.vala',
     'src' / 'Core' / 'Module.vala',
+    'src' / 'Modules' / 'AppModule.vala',
     'src' / 'Modules' / 'DconfModule.vala',
+    'src' / 'Modules' / 'RepoModule.vala',
     dependencies: [
         dependency('gtk4'),
         dependency('granite-7'),
