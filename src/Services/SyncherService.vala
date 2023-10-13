@@ -28,6 +28,8 @@ public class Syncher.SyncherService : Object {
         return _instance.once (() => { return new SyncherService (); });
     }
 
+    public Error? error_state { get; private set; default = null; }
+    public File sync_dir { get; private set; }
 
     private const string FLATPAK_REMOTES_FILE_NAME = ".flatpak-remotes";
     private const string FLATPAKS_FILE_NAME = ".installed-flatpaks";
@@ -35,7 +37,6 @@ public class Syncher.SyncherService : Object {
 
     private Settings settings;
     private Cancellable cancellable;
-    private File sync_dir;
     private uint timer_id = 0;
 
     construct {
@@ -44,24 +45,32 @@ public class Syncher.SyncherService : Object {
 
         error.connect ((step, msg) => warning ("An error occured during %s: %s", step.to_string (), msg));
         fatal_error.connect ((step, msg) => warning ("An error occured during %s: %s", step.to_string (), msg));
+    }
 
-        var dir = File.new_for_uri (settings.get_string ("sync-location"));
-        setup_synchronization (dir);
+    public void setup_saved_synchronization () {
+        var saved_location = settings.get_string ("sync-location");
+        if (saved_location != "") {
+            var dir = File.new_for_uri (saved_location);
+            setup_synchronization (dir);
+        }
     }
 
     public void setup_synchronization (File dir) {
+        sync_dir = dir;
+
         if (!dir.query_exists ()) {
+            error_state = new FileError.NOENT ("Synchronization directory doesn't exist.");
             fatal_error (SETUP, "Synchronization directory doesn't exist.");
             return;
         }
+
+        error_state = null;
 
         debug ("Setting up synchronization for directory with uri: %s", dir.get_uri ());
 
         if (timer_id != 0) {
             Source.remove (timer_id);
         }
-
-        sync_dir = dir;
 
         sync.begin (sync_dir);
 
@@ -71,7 +80,11 @@ public class Syncher.SyncherService : Object {
         });
     }
 
-    public async void sync (File dir, bool should_export = true) {
+    public async void sync (File? dir = null, bool should_export = true) {
+        if (dir == null) {
+            dir = sync_dir;
+        }
+
         if (!dir.query_exists ()) {
             fatal_error (PREPARING, "Synchronization directory doesn't exist.");
             return;
@@ -105,7 +118,7 @@ public class Syncher.SyncherService : Object {
     public async void import (File dir) {
         start_sync (IMPORT);
 
-        if (settings.get_boolean ("sync-config")) {
+        if (settings.get_boolean ("sync-config")) {	
             var dconf_file = dir.get_child (DCONF_FILE_NAME);
             yield load_saved_configuration (dconf_file);
         }

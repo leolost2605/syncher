@@ -12,6 +12,8 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
         {ACTION_PREFERENCES, on_action_preferences }
     };
 
+    private ErrorView error_view;
+    private Adw.Leaflet leaflet;
 
     public MainWindow (Application application) {
         Object (
@@ -21,31 +23,19 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
 
     construct {
         add_action_entries (ACTION_ENTRIES, this);
-        // var uris = new Gtk.StringList (null);
-        // var drop_down = new Gtk.DropDown (uris, null);
-        // var volume_monitor = VolumeMonitor.get ();
-        // foreach (var mount in volume_monitor.get_mounts ()) {
-        //     uris.append (mount.get_default_location ().get_uri ());
-        //     var dir = mount.get_default_location ();
-        //     var test = File.new_build_filename (dir.get_path (), "test2");
-        //     try {
-        //         test.create (NONE, null);
-        //     } catch (Error e) {
-        //         warning ("Failed to creat file: %s", e.message);
-        //     }
-        // }
+
+        error_view = new ErrorView ();
 
         var home_view = new HomeView ();
 
         var progress_view = new ProgressView ();
 
-        var leaflet = new Adw.Leaflet () {
+        leaflet = new Adw.Leaflet () {
             can_unfold = false,
             hexpand = true,
             vexpand = true
         };
         leaflet.append (home_view);
-        leaflet.append (progress_view);
 
         child = leaflet;
         default_height = 550;
@@ -57,12 +47,29 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
         var syncher_service = SyncherService.get_default ();
 
         syncher_service.start_sync.connect (() => {
+            leaflet.append (progress_view);
             leaflet.visible_child = progress_view;
+        });
+
+        update_error_state ();
+        syncher_service.notify["error-state"].connect (update_error_state);
+
+        leaflet.notify["visible-child"].connect (() => {
+            if (leaflet.get_adjacent_child (FORWARD) != null) {
+                leaflet.remove (leaflet.get_adjacent_child (FORWARD));
+            }
         });
     }
 
     private void on_action_preferences () {
         new PreferencesWindow (this);
+    }
+
+    private void update_error_state () {
+        if (SyncherService.get_default ().error_state != null) {
+            leaflet.append (error_view);
+            leaflet.visible_child = error_view;
+        }
     }
 
     private void get_location () {

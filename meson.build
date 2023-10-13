@@ -12,6 +12,7 @@ add_global_arguments('-DGETTEXT_PACKAGE="@0@"'.format (meson.project_name()), la
 executable(
     meson.project_name(),
     'src' / 'Application.vala',
+    'src' / 'ErrorView.vala',
     'src' / 'HomeView.vala',
     'src' / 'Window.vala',
     'src' / 'PreferencesWindow.vala',
