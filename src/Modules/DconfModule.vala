@@ -5,6 +5,9 @@ public class Syncher.DconfModule : Object, Module {
     public bool enabled { get; set; default = true; }
 
     construct {
+        var settings = new GLib.Settings ("io.github.leolost2605.syncher");
+        settings.bind ("sync-config", this, "enabled", DEFAULT);
+
         import_label = _("Loading Configuration");
         export_label = _("Saving Configuration");
         id = "dconf";

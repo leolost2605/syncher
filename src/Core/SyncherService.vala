@@ -9,9 +9,6 @@ public class Syncher.SyncherService : Object {
     public signal void finish_sync ();
 
     public enum ProgressStep {
-        CONFIG = 0,
-        REMOTES = 1,
-        APPS = 2,
         SETUP,
         PREPARING
     }
@@ -29,12 +26,7 @@ public class Syncher.SyncherService : Object {
     public Error? error_state { get; private set; default = null; }
     public File sync_dir { get; private set; }
 
-    public HashTable<string, Module> modules_by_id;
     public List<Module> modules;
-
-    private const string FLATPAK_REMOTES_FILE_NAME = ".flatpak-remotes";
-    private const string FLATPAKS_FILE_NAME = ".installed-flatpaks";
-    private const string DCONF_FILE_NAME = ".dconf-config";
 
     private Settings settings;
     private Cancellable cancellable;
@@ -42,18 +34,14 @@ public class Syncher.SyncherService : Object {
 
     construct {
         modules = new List<Module> ();
-        modules_by_id = new HashTable<string, Module> (str_hash, str_equal);
         settings = new GLib.Settings ("io.github.leolost2605.syncher");
         cancellable = new Cancellable ();
 
         fatal_error.connect ((step, msg) => warning ("An error occured during %s: %s", step.to_string (), msg));
 
         modules.append (new DconfModule ());
-        modules_by_id[modules.last ().data.id] = modules.last ().data;
         modules.append (new RepoModule ());
-        modules_by_id[modules.last ().data.id] = modules.last ().data;
         modules.append (new AppModule ());
-        modules_by_id[modules.last ().data.id] = modules.last ().data;
     }
 
     public void setup_saved_synchronization () {
@@ -128,24 +116,13 @@ public class Syncher.SyncherService : Object {
         start_sync (IMPORT);
 
         foreach (var module in modules) {
+            if (!module.enabled) {
+                continue;
+            }
+
             var file = dir.get_child ("." + module.id);
             yield module.import (file);
         }
-
-        // if (settings.get_boolean ("sync-config")) {
-        //     var dconf_file = dir.get_child (DCONF_FILE_NAME);
-        //     // yield load_saved_configuration (dconf_file);
-        //     yield modules_by_id["dconf"].import (dconf_file);
-        // }
-
-        // if (settings.get_boolean ("sync-apps")) {
-        //     var flatpak_remotes_file = dir.get_child (FLATPAK_REMOTES_FILE_NAME);
-        //     yield modules_by_id["repo"].import (flatpak_remotes_file);
-        //     // yield add_saved_flatpak_remotes (flatpak_remotes_file);
-        //     var flatpak_file = dir.get_child (FLATPAKS_FILE_NAME);
-        //     yield modules_by_id["app"].import (flatpak_file);
-        //     // yield install_saved_flatpak_apps (flatpak_file);
-        // }
 
         finish_sync ();
     }
@@ -154,24 +131,13 @@ public class Syncher.SyncherService : Object {
         start_sync (EXPORT);
 
         foreach (var module in modules) {
+            if (!module.enabled) {
+                continue;
+            }
+
             var file = dir.get_child ("." + module.id);
             yield module.export (file);
         }
-
-        // if (settings.get_boolean ("sync-config")) {
-        //     var dconf_file = dir.get_child (DCONF_FILE_NAME);
-        //     // yield save_configuration (dconf_file);
-        //     yield modules_by_id["dconf"].export (dconf_file);
-        // }
-
-        // if (settings.get_boolean ("sync-apps")) {
-        //     var flatpak_remotes_file = dir.get_child (FLATPAK_REMOTES_FILE_NAME);
-        //     yield modules_by_id["repo"].export (flatpak_remotes_file);
-        //     // yield save_flatpak_remotes (flatpak_remotes_file);
-        //     var flatpak_file = dir.get_child (FLATPAKS_FILE_NAME);
-        //     yield modules_by_id["app"].export (flatpak_file);
-        //     // yield save_flatpak_apps (flatpak_file);
-        // }
 
         finish_sync ();
     }

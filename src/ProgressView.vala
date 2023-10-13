@@ -75,6 +75,10 @@ public class Syncher.ProgressView : Gtk.Box {
 
             int step = 1;
             foreach (var module in syncher_service.modules) {
+                if (!module.enabled) {
+                    continue;
+                }
+
                 progress_widgets += new ProgressWidget (module, step++, sync_type);
             }
 
