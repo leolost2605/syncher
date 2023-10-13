@@ -13,14 +13,6 @@ public class Syncher.ProgressView : Gtk.Box {
         header_bar.add_css_class (Granite.STYLE_CLASS_FLAT);
         header_bar.pack_start (back_button);
 
-        var first_progress_widget = new ProgressWidget (CONFIG);
-
-        var second_progress_widget = new ProgressWidget (REMOTES);
-
-        var third_progress_widget = new ProgressWidget (APPS);
-
-        ProgressWidget[] progress_widgets = {first_progress_widget, second_progress_widget, third_progress_widget};
-
         var completed_stack = new Gtk.Stack ();
         completed_stack.add_named (new Gtk.Label ("<big>4</big>") { use_markup = true }, "step");
         completed_stack.add_named (new Gtk.Image.from_icon_name ("emblem-default") { pixel_size = 32 }, "emblem");
@@ -79,31 +71,19 @@ public class Syncher.ProgressView : Gtk.Box {
         var syncher_service = SyncherService.get_default ();
 
         syncher_service.start_sync.connect ((sync_type) => {
-            int[] needed_progress_widgets = {};
+            ProgressWidget[] progress_widgets = {};
 
-            if (settings.get_boolean ("sync-config")) {
-                needed_progress_widgets += 0;
-            }
+            int step = 1;
+            foreach (var module in syncher_service.modules) {
+                if (!module.enabled) {
+                    continue;
+                }
 
-            if (settings.get_boolean ("sync-apps")) {
-                needed_progress_widgets += 1;
-                needed_progress_widgets += 2;
-            }
-
-            if (sync_type == IMPORT) {
-                first_progress_widget.label = _("Loading Configuration");
-                second_progress_widget.label = _("Adding Software Sources");
-                third_progress_widget.label = _("Installing Apps");
-            } else {
-                first_progress_widget.label = _("Saving Configuration");
-                second_progress_widget.label = _("Saving Software Sources");
-                third_progress_widget.label = _("Saving Apps");
+                progress_widgets += new ProgressWidget (module, step++, sync_type);
             }
 
             int current = 0;
-            foreach (var progress_widget_index in needed_progress_widgets) {
-                var progress_widget = progress_widgets[progress_widget_index];
-
+            foreach (var progress_widget in progress_widgets) {
                 grid.attach (progress_widget.stack, current + 1, 0, 1, 1);
                 grid.attach (progress_widget.label_widget, current, 1, 3, 1);
                 grid.attach (progress_widget.progress_bar, current + 2, 0, 3, 1);

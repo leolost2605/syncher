@@ -1,6 +1,7 @@
 public class Syncher.ProgressWidget : Object {
-    public SyncherService.ProgressStep step { get; construct; }
-    public string label { get; set; default = "Task"; }
+    public Syncher.Module module { get; construct; }
+    public int step { get; construct; }
+    public SyncherService.SyncType sync_type { get; construct; }
 
     public Gtk.Stack stack { get; construct; }
     public Gtk.Label label_widget { get; construct; }
@@ -9,8 +10,12 @@ public class Syncher.ProgressWidget : Object {
 
     private Gtk.ListBox error_dialog_list;
 
-    public ProgressWidget (SyncherService.ProgressStep step) {
-        Object (step: step);
+    public ProgressWidget (Module module, int step, SyncherService.SyncType sync_type) {
+        Object (
+            module: module,
+            step: step,
+            sync_type: sync_type
+        );
     }
 
     construct {
@@ -22,7 +27,7 @@ public class Syncher.ProgressWidget : Object {
             spinning = true
         };
 
-        var step_label = new Gtk.Label ("<big>%i</big>".printf (step + 1)) {
+        var step_label = new Gtk.Label ("<big>%i</big>".printf (step)) {
             use_markup = true
         };
 
@@ -36,8 +41,7 @@ public class Syncher.ProgressWidget : Object {
         stack.add_child (image);
         stack.add_child (fatal_image);
 
-        label_widget = new Gtk.Label (label);
-        bind_property ("label", label_widget, "label", SYNC_CREATE);
+        label_widget = new Gtk.Label (sync_type == IMPORT ? module.import_label : module.export_label);
 
         progress_bar = new Gtk.ProgressBar () {
             hexpand = true,
@@ -85,11 +89,7 @@ public class Syncher.ProgressWidget : Object {
             // error_dialog_list.remove_all ();
         });
 
-        syncher_service.progress.connect ((_step, percentage) => {
-            if (_step != step) {
-                return;
-            }
-
+        module.progress.connect ((percentage) => {
             progress_bar.fraction = (double) percentage / 100;
 
             if (stack.visible_child == fatal_image) {
@@ -103,21 +103,13 @@ public class Syncher.ProgressWidget : Object {
             }
         });
 
-        syncher_service.error.connect ((_step, msg, details) => {
-            if (_step != step) {
-                return;
-            }
-
+        module.error.connect ((msg, details) => {
             error_info.reveal_child = true;
 
             add_error_details (msg, details);
         });
 
-        syncher_service.fatal_error.connect ((_step, msg, details) => {
-            if (_step != step) {
-                return;
-            }
-
+        module.fatal_error.connect ((msg, details) => {
             stack.set_visible_child (fatal_image);
             error_info.reveal_child = true;
             progress_bar.sensitive = false;
