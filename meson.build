@@ -18,9 +18,9 @@ executable(
     'src' / 'PreferencesWindow.vala',
     'src' / 'ProgressView.vala',
     'src' / 'ProgressWidget.vala',
-    'src' / 'Services' / 'SyncherService.vala',
-    'src' / 'Services' / 'Module.vala',
-    'src' / 'Services' / 'DconfModule.vala',
+    'src' / 'Core' / 'SyncherService.vala',
+    'src' / 'Core' / 'Module.vala',
+    'src' / 'Modules' / 'DconfModule.vala',
     dependencies: [
         dependency('gtk4'),
         dependency('granite-7'),

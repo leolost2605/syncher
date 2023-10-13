@@ -124,7 +124,8 @@ public class Syncher.SyncherService : Object {
 
         if (settings.get_boolean ("sync-config")) {
             var dconf_file = dir.get_child (DCONF_FILE_NAME);
-            yield load_saved_configuration (dconf_file);
+            // yield load_saved_configuration (dconf_file);
+            yield modules["dconf"].import (dconf_file);
         }
 
         if (settings.get_boolean ("sync-apps")) {
@@ -299,7 +300,8 @@ public class Syncher.SyncherService : Object {
 
         if (settings.get_boolean ("sync-config")) {
             var dconf_file = dir.get_child (DCONF_FILE_NAME);
-            yield save_configuration (dconf_file);
+            // yield save_configuration (dconf_file);
+            yield modules["dconf"].export (dconf_file);
         }
 
         if (settings.get_boolean ("sync-apps")) {
