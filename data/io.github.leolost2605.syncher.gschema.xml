@@ -6,11 +6,6 @@
       <summary>Whether the window was maximized on last run</summary>
       <description>Whether the window was maximized on last run</description>
     </key>
-    <key name="window-position" type="(ii)">
-      <default>(-1, -1)</default>
-      <summary>Window position</summary>
-      <description>Most recent window position (x, y)</description>
-    </key>
     <key name="window-size" type="(ii)">
       <default>(1024, 750)</default>
       <summary>Most recent window size</summary>
@@ -25,6 +20,11 @@
       <default>0</default>
       <summary>Most recent time configuration was imported from a remote location</summary>
       <description>Most recent time configuration was exported from this device in unix time.</description>
+    </key>
+    <key name="only-import" type="b">
+      <default>false</default>
+      <summary>Only import settings</summary>
+      <description>Never export this device settings.</description>
     </key>
     <key name="sync-apps" type="b">
       <default>true</default>

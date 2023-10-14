@@ -98,9 +98,9 @@ public class Syncher.SyncherService : Object {
             var mod_time = info.get_modification_date_time ();
             if (mod_time != null) {
                 if (mod_time.compare (last_sync_time) > 0) {
-                    yield import (dir);
                     print ("Import!");
-                } else if (should_export) {
+                    yield import (dir);
+                } else if (!settings.get_boolean ("only-import")) {
                     print ("Export!");
                     yield export (dir);
                 } else {

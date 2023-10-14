@@ -44,9 +44,20 @@ public class Syncher.PreferencesWindow : Gtk.Window {
         custom_box.append (custom_label);
         custom_box.append (custom_button);
 
-        var interval_label = new Granite.HeaderLabel (_("Interval")) {
-            secondary_text = _("How often this device should synchronize with the remote location.")
+        var only_import_label = new Granite.HeaderLabel (_("Only Import")) {
+            secondary_text = _("Never export this device configuration to the sync location. Can be useful if you want apps installed here to not show up on your other devices but their apps should still show up here.")
         };
+
+        var only_import_switch = new Gtk.Switch () {
+            valign = START
+        };
+        settings.bind ("only-import", only_import_switch, "active", DEFAULT);
+
+        var only_import_box = new Gtk.Box (HORIZONTAL, 6) {
+            margin_top = 12
+        };
+        only_import_box.append (only_import_label);
+        only_import_box.append (only_import_switch);
 
         var grid = new Gtk.Grid () {
             margin_top = 12,
@@ -61,7 +72,7 @@ public class Syncher.PreferencesWindow : Gtk.Window {
         grid.attach (drop_down, 1, 1);
         grid.attach (custom_check_button, 0, 2);
         grid.attach (custom_box, 1, 2);
-        grid.attach (interval_label, 0, 3, 2);
+        grid.attach (only_import_box, 0, 3, 2);
 
         var items_label = new Granite.HeaderLabel (_("Items")) {
             secondary_text = _("Items to synchronize between your devices.")
