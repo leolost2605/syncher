@@ -1,9 +1,13 @@
 public class Syncher.ProgressView : Gtk.Box {
+    public Gtk.HeaderBar header_bar { get; construct; }
+
     construct {
-        var back_button = new Gtk.Button.with_label ("");
+        var back_button = new Gtk.Button.with_label ("") {
+            valign = CENTER
+        };
         back_button.add_css_class (Granite.STYLE_CLASS_BACK_BUTTON);
 
-        var header_bar = new Gtk.HeaderBar () {
+        header_bar = new Gtk.HeaderBar () {
             title_widget = new Gtk.Grid (),
             hexpand = true,
             valign = START

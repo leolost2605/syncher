@@ -1,4 +1,6 @@
 public class Syncher.HomeView : Gtk.Box {
+    public Gtk.HeaderBar header_bar { get; construct; }
+
     construct {
         var menu = new Menu ();
         menu.append (_("Preferences"), MainWindow.ACTION_PREFIX + MainWindow.ACTION_PREFERENCES);
@@ -11,7 +13,7 @@ public class Syncher.HomeView : Gtk.Box {
         };
         menu_button.add_css_class (Granite.STYLE_CLASS_LARGE_ICONS);
 
-        var header_bar = new Gtk.HeaderBar () {
+        header_bar = new Gtk.HeaderBar () {
             title_widget = new Gtk.Grid (),
             hexpand = true,
             valign = START

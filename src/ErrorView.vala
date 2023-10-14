@@ -1,6 +1,8 @@
 public class Syncher.ErrorView : Gtk.Box {
     private const string LABEL_MARKUP = "<span size='xx-large'><b>%s</b></span>\n<span weight='light'>%s</span>";
 
+    public Gtk.HeaderBar header_bar { get; construct; }
+
     private Gtk.Label label;
 
     construct {
@@ -15,7 +17,7 @@ public class Syncher.ErrorView : Gtk.Box {
         };
         menu_button.add_css_class (Granite.STYLE_CLASS_LARGE_ICONS);
 
-        var header_bar = new Gtk.HeaderBar () {
+        header_bar = new Gtk.HeaderBar () {
             title_widget = new Gtk.Grid (),
             hexpand = true,
             valign = START

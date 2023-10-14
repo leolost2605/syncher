@@ -39,6 +39,18 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
             vexpand = true
         };
 
+        child = leaflet;
+        default_height = 550;
+        default_width = 800;
+        title = "Syncher";
+        titlebar = new Gtk.Grid () { visible = false };
+        present ();
+
+        var size_group = new Gtk.SizeGroup (VERTICAL);
+        size_group.add_widget (error_view.header_bar);
+        size_group.add_widget (home_view.header_bar);
+        size_group.add_widget (progress_view.header_bar);
+
         if (settings.get_string ("sync-location") == "") {
             var welcome_view = new WelcomeView ();
             leaflet.append (welcome_view);
@@ -50,17 +62,6 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
         } else {
             leaflet.append (home_view);
         }
-
-        if (syncher_service.working) {
-            leaflet.append (progress_view);
-        }
-
-        child = leaflet;
-        default_height = 550;
-        default_width = 800;
-        title = "Syncher";
-        titlebar = new Gtk.Grid () { visible = false };
-        present ();
 
         update_working_state ();
         syncher_service.start_sync.connect (update_working_state);
