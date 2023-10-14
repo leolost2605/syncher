@@ -15,8 +15,6 @@ public class Syncher.Application : Gtk.Application {
 
     public static bool run_in_background;
 
-    private MainWindow? main_window = null;
-
     public Application () {
         Object (
             application_id: "io.github.leolost2605.syncher",
@@ -45,19 +43,13 @@ public class Syncher.Application : Gtk.Application {
             return;
         }
 
-        if (main_window == null) {
-            main_window = new MainWindow (this);
-            main_window.close_request.connect (() => {
-                main_window = null;
-                return false;
-            });
-        } else {
-            main_window.present ();
+        if (active_window == null) {
+            new MainWindow (this).present ();
         }
     }
 
     public bool is_running_in_background () {
-        return main_window == null;
+        return active_window == null;
     }
 
     public async void request_background () {
