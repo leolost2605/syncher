@@ -3,12 +3,18 @@
  * SPDX-FileCopyrightText: 2023 Your Organization (https://yourwebsite.com)
  */
 
+namespace Syncher {
+    private Settings settings;
+}
+
 public class Syncher.Application : Gtk.Application {
     public Application () {
         Object (
             application_id: "io.github.leolost2605.syncher",
             flags: ApplicationFlags.FLAGS_NONE
         );
+
+        settings = new Settings ("io.github.leolost2605.syncher");
     }
 
     protected override void activate () {

@@ -48,7 +48,7 @@ public class Syncher.SyncherService : Object {
         var saved_location = settings.get_string ("sync-location");
         if (saved_location != "") {
             var dir = File.new_for_uri (saved_location);
-            setup_synchronization (dir);
+            // setup_synchronization (dir);
         }
     }
 

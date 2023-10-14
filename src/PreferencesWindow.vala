@@ -1,10 +1,11 @@
 public class Syncher.PreferencesWindow : Gtk.Window {
+    private Gtk.Label custom_location_label;
+
     public PreferencesWindow (Gtk.Window window) {
         Object (transient_for: window);
     }
 
     construct {
-        var settings = new Settings ("io.github.leolost2605.syncher");
         var mounts = new ListStore (typeof (Mount));
 
         var location_label = new Granite.HeaderLabel (_("Location")) {
@@ -26,18 +27,20 @@ public class Syncher.PreferencesWindow : Gtk.Window {
             group = drop_down_checkbutton
         };
 
+        custom_location_label = new Gtk.Label (_("Change Location…"));
+
         var custom_button_content = new Gtk.Box (HORIZONTAL, 3) {
             halign = CENTER
         };
         custom_button_content.append (new Gtk.Image.from_icon_name ("folder-open-symbolic"));
-        custom_button_content.append (new Gtk.Label (_("Change Location…")));
+        custom_button_content.append (custom_location_label);
 
         var custom_button = new Gtk.Button () {
             valign = CENTER,
             child = custom_button_content
         };
 
-        var custom_box = new Gtk.Box (HORIZONTAL, 3);
+        var custom_box = new Gtk.Box (HORIZONTAL, 6);
         custom_box.append (custom_label);
         custom_box.append (custom_button);
 
@@ -140,8 +143,15 @@ public class Syncher.PreferencesWindow : Gtk.Window {
             for (int i = 0; i < mounts.get_n_items (); i++) {
                 if (((Mount) mounts.get_item (i)).get_default_location ().get_uri () == selected) {
                     drop_down.selected = i;
+                    drop_down_checkbutton.active = true;
                     break;
                 }
+            }
+
+            if (drop_down.selected == Gtk.INVALID_LIST_POSITION) {
+                var file = File.new_for_uri (selected);
+                custom_location_label.label = file.get_basename ();
+                custom_check_button.active = true;
             }
         }
 
@@ -157,14 +167,25 @@ public class Syncher.PreferencesWindow : Gtk.Window {
             settings.set_string ("sync-location", file.get_uri ());
             SyncherService.get_default ().setup_synchronization (file);
         });
+
+        custom_button.clicked.connect (get_sync_location);
+
+        custom_check_button.toggled.connect (() => {
+            if (!custom_check_button.active) {
+                custom_location_label.label = _("Change Location…");
+                settings.set_string ("sync-location", "");
+            }
+        });
     }
 
     private void get_sync_location () {
-        var file_chooser = new Gtk.FileChooserNative ("Choose location", (Gtk.Window) get_root (), SELECT_FOLDER, "Accept", "Cancel");
+        var file_chooser = new Gtk.FileChooserNative (_("Choose location"), this, SELECT_FOLDER, _("Accept"), _("Cancel"));
         file_chooser.response.connect ((res) => {
             if (res == Gtk.ResponseType.ACCEPT) {
                 var file = file_chooser.get_file ();
+                custom_location_label.label = file.get_basename ();
                 SyncherService.get_default ().setup_synchronization (file);
+                settings.set_string ("sync-location", file.get_uri ());
             }
             file_chooser.destroy ();
         });
