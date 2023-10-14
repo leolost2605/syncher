@@ -137,7 +137,7 @@ public class Syncher.ErrorView : Gtk.Box {
             syncher_service.sync ();
         });
 
-        syncher_service.finish_sync.connect (() => {
+        syncher_service.notify["working"].connect (() => {
             preparing_stack.visible_child = retry_icon;
         });
 

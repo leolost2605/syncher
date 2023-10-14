@@ -5,7 +5,6 @@
 
 public class Syncher.SyncherService : Object {
     public signal void fatal_error (ProgressStep step, string msg, string details = "");
-    public signal void finish_sync ();
 
     public enum ProgressStep {
         SETUP,
@@ -87,7 +86,6 @@ public class Syncher.SyncherService : Object {
 
     public async void sync (File? dir = null, bool should_export = true) {
         cancellable.reset ();
-        working = true;
 
         if (dir == null) {
             dir = sync_dir;
@@ -128,6 +126,7 @@ public class Syncher.SyncherService : Object {
 
     public async void import (File dir) {
         current_sync_type = IMPORT;
+        working = true;
 
         foreach (var module in modules) {
             if (cancellable.is_cancelled ()) {
@@ -141,12 +140,11 @@ public class Syncher.SyncherService : Object {
             var file = dir.get_child ("." + module.id);
             yield module.import (file);
         }
-
-        finish_sync ();
     }
 
     public async void export (File dir) {
         current_sync_type = EXPORT;
+        working = true;
 
         foreach (var module in modules) {
             if (cancellable.is_cancelled ()) {
@@ -160,8 +158,6 @@ public class Syncher.SyncherService : Object {
             var file = dir.get_child ("." + module.id);
             yield module.export (file);
         }
-
-        finish_sync ();
     }
 
     public void cancel () {
