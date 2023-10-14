@@ -1,0 +1,158 @@
+# German translations for io.github.leolost2605.syncher package.
+# Copyright (C) 2023 THE io.github.leolost2605.syncher'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the io.github.leolost2605.syncher package.
+# Automatically generated, 2023.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: io.github.leolost2605.syncher\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-10-14 14:07+0200\n"
+"PO-Revision-Date: 2023-10-14 14:07+0200\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: src/ErrorView.vala:8 src/HomeView.vala:4
+msgid "Preferences"
+msgstr ""
+
+#: src/ErrorView.vala:70
+msgid "Retry"
+msgstr ""
+
+#: src/ErrorView.vala:82 src/PreferencesWindow.vala:30
+#: src/PreferencesWindow.vala:186
+msgid "Change Location…"
+msgstr ""
+
+#: src/ErrorView.vala:113
+msgid "Synchronization Failed"
+msgstr ""
+
+#: src/ErrorView.vala:157
+msgid "A Fatal Error Occured"
+msgstr ""
+
+#: src/HomeView.vala:40
+msgid "Nothing to do!"
+msgstr ""
+
+#: src/HomeView.vala:41
+msgid ""
+"You're all synchronized. To manually start a new synchronization click the "
+"button below."
+msgstr ""
+
+#: src/HomeView.vala:51
+msgid "Synchronize Now"
+msgstr ""
+
+#: src/HomeView.vala:62
+msgid "Preparing sync…"
+msgstr ""
+
+#: src/PreferencesWindow.vala:11
+msgid "Location"
+msgstr ""
+
+#: src/PreferencesWindow.vala:12
+msgid "Shared location used to synchronize your devices."
+msgstr ""
+
+#: src/PreferencesWindow.vala:24
+msgid "Custom:"
+msgstr ""
+
+#: src/PreferencesWindow.vala:47
+msgid "Only Import"
+msgstr ""
+
+#: src/PreferencesWindow.vala:48
+msgid ""
+"Never export this device configuration to the sync location. Can be useful "
+"if you want apps installed here to not show up on your other devices but "
+"their apps should still show up here."
+msgstr ""
+
+#: src/PreferencesWindow.vala:77
+msgid "Items"
+msgstr ""
+
+#: src/PreferencesWindow.vala:78
+msgid "Items to synchronize between your devices."
+msgstr ""
+
+#: src/PreferencesWindow.vala:81
+msgid "Apps"
+msgstr ""
+
+#: src/PreferencesWindow.vala:91
+msgid "Configuration"
+msgstr ""
+
+#: src/PreferencesWindow.vala:115
+msgid "General"
+msgstr ""
+
+#: src/PreferencesWindow.vala:116
+msgid "Modules"
+msgstr ""
+
+#: src/PreferencesWindow.vala:193
+msgid "Choose location"
+msgstr ""
+
+#: src/PreferencesWindow.vala:193
+msgid "Accept"
+msgstr ""
+
+#: src/PreferencesWindow.vala:193 src/ProgressView.vala:74
+msgid "Cancel"
+msgstr ""
+
+#: src/ProgressView.vala:18
+msgid "Completed"
+msgstr ""
+
+#: src/ProgressView.vala:29
+msgid "Working…"
+msgstr ""
+
+#: src/ProgressView.vala:30
+msgid ""
+"Depending on your internet connection and number of apps, this can take a "
+"while."
+msgstr ""
+
+#: src/ProgressView.vala:111
+msgid "Back"
+msgstr ""
+
+#: src/ProgressWidget.vala:139
+#, c-format
+msgid "Fatal error: %s"
+msgstr ""
+
+#: data/io.github.leolost2605.syncher.desktop.in:6
+msgid "Sycher"
+msgstr ""
+
+#: data/io.github.leolost2605.syncher.desktop.in:7
+#: data/io.github.leolost2605.syncher.metainfo.xml.in:6
+msgid "A catchy tagline"
+msgstr ""
+
+#: data/io.github.leolost2605.syncher.metainfo.xml.in:5
+msgid "Syncher"
+msgstr ""
+
+#: data/io.github.leolost2605.syncher.metainfo.xml.in:18
+msgid ""
+"A quick summary of your app's main selling points and features. Just a "
+"couple sentences per paragraph is best."
+msgstr ""
