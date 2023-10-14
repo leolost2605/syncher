@@ -25,6 +25,9 @@
 public class Syncher.WelcomeView : Gtk.Box {
     public signal void finished ();
 
+    private Adw.Carousel carousel;
+    private Gtk.Button next_button;
+
     construct {
         var header_bar = new Gtk.HeaderBar () {
             title_widget = new Gtk.Grid (),
@@ -66,48 +69,49 @@ public class Syncher.WelcomeView : Gtk.Box {
         top_box.append (image_overlay);
         top_box.append (label);
 
-        var helo = new Gtk.Label ("hello");
+        var location_page = new LocationPage ();
 
-        var bye = new Gtk.Label ("bye");
+        var module_page = new ModulePage ();
 
-        var carousel = new Adw.Carousel ();
-        carousel.append (helo);
-        carousel.append (bye);
-
-        var clamp = new Adw.Clamp () {
-            child = carousel
-        };
-
-        var indicator = new Adw.CarouselIndicatorDots ();
-        indicator.carousel = carousel;
-
-        var next_button = new Gtk.Button.with_label (_("Next")) {
-            halign = CENTER
-        };
-
-        var grid = new Gtk.Grid () {
+        carousel = new Adw.Carousel () {
             margin_top = 12,
             margin_bottom = 12,
             margin_start = 12,
             margin_end = 12,
-            column_spacing = 6,
-            row_spacing = 6,
+            hexpand = true,
+            vexpand = true,
             halign = CENTER
         };
-        grid.attach (clamp, 0, 0, 3);
-        grid.attach (indicator, 1, 1);
-        grid.attach (next_button, 2, 1);
+        carousel.append (location_page);
+        carousel.append (module_page);
+
+        var help_link = new Gtk.LinkButton.with_label ("https://github.com/leolost2605/syncher/wiki/First-Setup-Guide", _("Need help?"));
+
+        var indicator = new Adw.CarouselIndicatorDots ();
+        indicator.carousel = carousel;
+
+        next_button = new Gtk.Button.with_label (_("Next")) {
+            halign = END,
+            width_request = 86,
+            sensitive = false
+        };
+        next_button.add_css_class (Granite.STYLE_CLASS_SUGGESTED_ACTION);
+
+        var bottom_box = new Gtk.CenterBox ();
+        bottom_box.set_start_widget (help_link);
+        bottom_box.set_center_widget (indicator);
+        bottom_box.set_end_widget (next_button);
 
         var box = new Gtk.Box (VERTICAL, 24) {
-            halign = CENTER,
-            valign = CENTER,
+            hexpand = true,
+            vexpand = true,
             margin_top = 12,
             margin_start = 12,
             margin_end = 12,
             margin_bottom = 12
         };
-        box.append (top_box);
-        box.append (grid);
+        box.append (carousel);
+        box.append (bottom_box);
 
         var handle = new Gtk.WindowHandle () {
             child = box,
@@ -124,10 +128,28 @@ public class Syncher.WelcomeView : Gtk.Box {
         orientation = VERTICAL;
         append (overlay);
 
-        // sync_now.clicked.connect (() => {
-        //     sync_now_stack.visible_child = preparing_sync;
-        //     get_sync_location ();
-        // });
+        next_button.bind_property ("sensitive", carousel, "interactive", SYNC_CREATE);
+
+        next_button.clicked.connect (() => {
+            var current = (int) carousel.position;
+            carousel.scroll_to (carousel.get_nth_page (current + 1), true);
+        });
+
+        location_page.notify["valid"].connect (() => {
+            if (carousel.get_nth_page ((int) carousel.position) != location_page) {
+                return;
+            }
+
+            next_button.sensitive = location_page.valid;
+        });
+
+        module_page.notify["valid"].connect (() => {
+            if (carousel.get_nth_page ((int) carousel.position) != module_page) {
+                return;
+            }
+
+            next_button.sensitive = module_page.valid;
+        });
     }
 
     private void get_sync_location () {

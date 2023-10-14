@@ -15,7 +15,6 @@ executable(
     'src' / 'ErrorView.vala',
     'src' / 'HomeView.vala',
     'src' / 'Window.vala',
-    'src' / 'WelcomeView.vala',
     'src' / 'PreferencesWindow.vala',
     'src' / 'ProgressView.vala',
     'src' / 'ProgressWidget.vala',
@@ -24,6 +23,9 @@ executable(
     'src' / 'Modules' / 'AppModule.vala',
     'src' / 'Modules' / 'DconfModule.vala',
     'src' / 'Modules' / 'RepoModule.vala',
+    'src' / 'WelcomeView' / 'LocationPage.vala',
+    'src' / 'WelcomeView' / 'ModulePage.vala',
+    'src' / 'WelcomeView' / 'WelcomeView.vala',
     dependencies: [
         dependency('gtk4'),
         dependency('granite-7'),
