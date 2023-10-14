@@ -81,14 +81,20 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
 
     private void update_working_state () {
         if (SyncherService.get_default ().working) {
-            leaflet.append (progress_view);
+            if (progress_view.parent == null) {
+                leaflet.append (progress_view);
+            }
+
             leaflet.visible_child = progress_view;
         }
     }
 
     private void update_error_state () {
         if (SyncherService.get_default ().error_state != null) {
-            leaflet.append (error_view);
+            if (error_view.parent == null) {
+                leaflet.append (error_view);
+            }
+
             leaflet.visible_child = error_view;
         }
     }
