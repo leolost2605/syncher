@@ -67,8 +67,8 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
 
     private void update_error_state () {
         if (SyncherService.get_default ().error_state != null) {
-            // leaflet.append (error_view);
-            // leaflet.visible_child = error_view;
+            leaflet.append (error_view);
+            leaflet.visible_child = error_view;
         }
     }
 
