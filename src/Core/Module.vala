@@ -14,12 +14,6 @@ public abstract class Syncher.Module : Object {
     construct {
         cancellable = new Cancellable ();
 
-        notify["progress"].connect (() => {
-            if (progress == 0) {
-                cancellable.reset ();
-            }
-        });
-
         fatal_error.connect ((msg, details) => {
             var app = (Application) GLib.Application.get_default ();
 
@@ -31,6 +25,14 @@ public abstract class Syncher.Module : Object {
             notification.set_body (msg);
 
             app.send_notification (null, notification);
+        });
+
+        var syncher_service = SyncherService.get_default ();
+        syncher_service.notify["working"].connect (() => {
+            if (!syncher_service.working) {
+                progress = 0;
+                cancellable.reset ();
+            }
         });
     }
 

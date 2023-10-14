@@ -115,11 +115,11 @@ public class Syncher.ProgressWidget : Object {
     }
 
     private void update_progress () {
-        progress_bar.fraction = (double) module.progress / 100;
-
-        if (stack.visible_child_name == "fatal") {
+        if (stack.visible_child_name == "fatal" || stack.visible_child_name == "image") {
             return;
         }
+
+        progress_bar.fraction = (double) module.progress / 100;
 
         if (module.progress == 100) {
             stack.set_visible_child_name ("image");

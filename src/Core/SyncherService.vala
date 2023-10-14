@@ -45,10 +45,6 @@ public class Syncher.SyncherService : Object {
         });
 
         fatal_error.connect ((step, msg) => warning ("An error occured during %s: %s", step.to_string (), msg));
-
-        modules.append (new DconfModule ());
-        modules.append (new RepoModule ());
-        modules.append (new AppModule ());
     }
 
     public void setup_saved_synchronization () {
@@ -57,6 +53,10 @@ public class Syncher.SyncherService : Object {
             var dir = File.new_for_uri (saved_location);
             setup_synchronization (dir);
         }
+
+        modules.append (new DconfModule ());
+        modules.append (new RepoModule ());
+        modules.append (new AppModule ());
     }
 
     public void setup_synchronization (File dir) {
