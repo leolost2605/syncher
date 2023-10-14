@@ -1,5 +1,8 @@
-public class Syncher.ModulePage : Gtk.Box {
-    public bool valid { get; private set; default = false; }
+public class Syncher.ModulePage : Gtk.Box, AbstractWelcomePage {
+    public bool valid { get; protected set; default = true; }
+
+    private Gtk.Switch apps_switch;
+    private Gtk.Switch config_switch;
 
     construct {
         var mounts = new ListStore (typeof (Mount));
@@ -30,17 +33,17 @@ public class Syncher.ModulePage : Gtk.Box {
             halign = END
         };
 
-        var apps_switch = new Gtk.Switch () {
+        apps_switch = new Gtk.Switch () {
             halign = START,
             hexpand = true
         };
         settings.bind ("sync-apps", apps_switch, "active", DEFAULT);
 
-        var config_label = new Gtk.Label (_("Configuration")) {
+        var config_label = new Gtk.Label (_("Settings")) {
             halign = END
         };
 
-        var config_switch = new Gtk.Switch () {
+        config_switch = new Gtk.Switch () {
             halign = START
         };
         settings.bind ("sync-config", config_switch, "active", DEFAULT);
@@ -65,5 +68,16 @@ public class Syncher.ModulePage : Gtk.Box {
         spacing = 24;
         append (top_box);
         append (grid);
+
+        apps_switch.notify["active"].connect (check_valid);
+        config_switch.notify["active"].connect (check_valid);
+    }
+
+    private void check_valid () {
+        if (!apps_switch.active && !config_switch.active) {
+            valid = false;
+        } else {
+            valid = true;
+        }
     }
 }

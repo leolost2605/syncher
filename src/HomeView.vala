@@ -109,8 +109,6 @@ public class Syncher.HomeView : Gtk.Box {
         syncher_service.finish_sync.connect (() => {
             sync_now_stack.visible_child = sync_now;
         });
-
-        syncher_service.setup_saved_synchronization ();
     }
 
     private void get_sync_location () {

@@ -27,6 +27,7 @@ public class Syncher.WelcomeView : Gtk.Box {
 
     private Adw.Carousel carousel;
     private Gtk.Button next_button;
+    private uint current_pos = 0;
 
     construct {
         var header_bar = new Gtk.HeaderBar () {
@@ -36,42 +37,13 @@ public class Syncher.WelcomeView : Gtk.Box {
         };
         header_bar.add_css_class (Granite.STYLE_CLASS_FLAT);
 
-        var emblem = new Gtk.Image.from_icon_name ("preferences-system") {
-            halign = END,
-            valign = END,
-            pixel_size = 64
-        };
-
-        var image = new Gtk.Image.from_icon_name ("application-x-executable") {
-            pixel_size = 128
-        };
-
-        var image_overlay = new Gtk.Overlay () {
-            child = image,
-            halign = CENTER
-        };
-        image_overlay.add_overlay (emblem);
-
-        var label = new Gtk.Label (
-            "<span size='xx-large'><b>%s</b></span>\n<span weight='light'>%s</span>".printf (
-                _("Welcome"),
-                _("Follow the instructions below to get Syncher up and running and out of your way for seamless integration between your devices.")
-            )
-        ) {
-            halign = CENTER,
-            use_markup = true,
-            justify = CENTER
-        };
-
-        var top_box = new Gtk.Box (VERTICAL, 3) {
-            halign = CENTER
-        };
-        top_box.append (image_overlay);
-        top_box.append (label);
+        var welcome_page = new WelcomePage ();
 
         var location_page = new LocationPage ();
 
         var module_page = new ModulePage ();
+
+        var permission_page = new PermissionPage ();
 
         carousel = new Adw.Carousel () {
             margin_top = 12,
@@ -80,20 +52,23 @@ public class Syncher.WelcomeView : Gtk.Box {
             margin_end = 12,
             hexpand = true,
             vexpand = true,
-            halign = CENTER
+            halign = CENTER,
+            allow_long_swipes = false,
+            allow_scroll_wheel = false
         };
+        carousel.append (welcome_page);
         carousel.append (location_page);
         carousel.append (module_page);
+        carousel.append (permission_page);
 
         var help_link = new Gtk.LinkButton.with_label ("https://github.com/leolost2605/syncher/wiki/First-Setup-Guide", _("Need help?"));
 
         var indicator = new Adw.CarouselIndicatorDots ();
         indicator.carousel = carousel;
 
-        next_button = new Gtk.Button.with_label (_("Next")) {
+        next_button = new Gtk.Button () {
             halign = END,
-            width_request = 86,
-            sensitive = false
+            width_request = 86
         };
         next_button.add_css_class (Granite.STYLE_CLASS_SUGGESTED_ACTION);
 
@@ -128,28 +103,52 @@ public class Syncher.WelcomeView : Gtk.Box {
         orientation = VERTICAL;
         append (overlay);
 
-        next_button.bind_property ("sensitive", carousel, "interactive", SYNC_CREATE);
-
         next_button.clicked.connect (() => {
             var current = (int) carousel.position;
-            carousel.scroll_to (carousel.get_nth_page (current + 1), true);
+
+            if (carousel.get_nth_page (current) == permission_page) {
+                var app = (Application) GLib.Application.get_default ();
+                app.request_background.begin (() => carousel.scroll_to (carousel.get_nth_page (current + 1), true));
+            } else {
+                carousel.scroll_to (carousel.get_nth_page (current + 1), true);
+            }
         });
 
-        location_page.notify["valid"].connect (() => {
-            if (carousel.get_nth_page ((int) carousel.position) != location_page) {
+        carousel.page_changed.connect ((pos) => {
+            current_pos = pos;
+            update_valid ((AbstractWelcomePage) carousel.get_nth_page (pos));
+        });
+
+        carousel.notify["position"].connect (() => {
+            if (next_button.sensitive) {
                 return;
             }
 
-            next_button.sensitive = location_page.valid;
-        });
-
-        module_page.notify["valid"].connect (() => {
-            if (carousel.get_nth_page ((int) carousel.position) != module_page) {
-                return;
+            if (((double) current_pos) < carousel.position) {
+                carousel.scroll_to (carousel.get_nth_page (current_pos), false);
             }
-
-            next_button.sensitive = module_page.valid;
         });
+
+        location_page.notify["valid"].connect ((obj, spec) => update_valid ((AbstractWelcomePage) obj));
+        module_page.notify["valid"].connect ((obj, spec) => update_valid ((AbstractWelcomePage) obj));
+
+        update_valid ((AbstractWelcomePage) carousel.get_nth_page ((int) carousel.position));
+    }
+
+    private void update_valid (AbstractWelcomePage page) {
+        if (((AbstractWelcomePage) carousel.get_nth_page ((int) carousel.position)) != page) {
+            return;
+        }
+
+        if (page is WelcomePage) {
+            next_button.label = _("Get Started");
+        } else if (page is PermissionPage) {
+            next_button.label = _("Request Permission…");
+        } else {
+            next_button.label = _("Next");
+        }
+
+        next_button.sensitive = page.valid;
     }
 
     private void get_sync_location () {

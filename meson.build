@@ -23,13 +23,18 @@ executable(
     'src' / 'Modules' / 'AppModule.vala',
     'src' / 'Modules' / 'DconfModule.vala',
     'src' / 'Modules' / 'RepoModule.vala',
+    'src' / 'WelcomeView' / 'AbstractWelcomePage.vala',
     'src' / 'WelcomeView' / 'LocationPage.vala',
     'src' / 'WelcomeView' / 'ModulePage.vala',
+    'src' / 'WelcomeView' / 'PermissionPage.vala',
+    'src' / 'WelcomeView' / 'WelcomePage.vala',
     'src' / 'WelcomeView' / 'WelcomeView.vala',
     dependencies: [
         dependency('gtk4'),
         dependency('granite-7'),
-        dependency('libadwaita-1')
+        dependency('libadwaita-1'),
+        dependency('libportal'),
+        dependency('libportal-gtk4')
     ],
     install: true
 )
