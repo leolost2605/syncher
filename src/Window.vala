@@ -35,7 +35,18 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
             hexpand = true,
             vexpand = true
         };
-        leaflet.append (home_view);
+
+        if (settings.get_string ("sync-location") == "") {
+            var welcome_view = new WelcomeView ();
+            leaflet.append (welcome_view);
+            welcome_view.finished.connect (() => {
+                leaflet.append (home_view);
+                leaflet.visible_child = home_view;
+                leaflet.remove (welcome_view);
+            });
+        } else {
+            leaflet.append (home_view);
+        }
 
         child = leaflet;
         default_height = 550;

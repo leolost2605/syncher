@@ -15,6 +15,7 @@ executable(
     'src' / 'ErrorView.vala',
     'src' / 'HomeView.vala',
     'src' / 'Window.vala',
+    'src' / 'WelcomeView.vala',
     'src' / 'PreferencesWindow.vala',
     'src' / 'ProgressView.vala',
     'src' / 'ProgressWidget.vala',
