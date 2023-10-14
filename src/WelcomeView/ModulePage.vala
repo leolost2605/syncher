@@ -1,5 +1,5 @@
-public class Syncher.ModulePage : Gtk.Box {
-    public bool valid { get; private set; default = false; }
+public class Syncher.ModulePage : Gtk.Box, AbstractWelcomePage {
+    public bool valid { get; protected set; default = false; }
 
     construct {
         var mounts = new ListStore (typeof (Mount));

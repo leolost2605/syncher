@@ -23,8 +23,10 @@ executable(
     'src' / 'Modules' / 'AppModule.vala',
     'src' / 'Modules' / 'DconfModule.vala',
     'src' / 'Modules' / 'RepoModule.vala',
+    'src' / 'WelcomeView' / 'AbstractWelcomePage.vala',
     'src' / 'WelcomeView' / 'LocationPage.vala',
     'src' / 'WelcomeView' / 'ModulePage.vala',
+    'src' / 'WelcomeView' / 'WelcomePage.vala',
     'src' / 'WelcomeView' / 'WelcomeView.vala',
     dependencies: [
         dependency('gtk4'),
