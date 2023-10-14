@@ -18,6 +18,19 @@ public abstract class Syncher.Module : Object {
                 cancellable.reset ();
             }
         });
+
+        fatal_error.connect ((msg, details) => {
+            var app = (Application) GLib.Application.get_default ();
+
+            if (!app.is_running_in_background ()) {
+                return;
+            }
+
+            var notification = new Notification (_("An Error occured"));
+            notification.set_body (msg);
+
+            app.send_notification (null, notification);
+        });
     }
 
     public abstract async void import (File file);

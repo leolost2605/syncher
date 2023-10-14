@@ -43,6 +43,8 @@ public class Syncher.WelcomeView : Gtk.Box {
 
         var module_page = new ModulePage ();
 
+        var permission_page = new PermissionPage ();
+
         carousel = new Adw.Carousel () {
             margin_top = 12,
             margin_bottom = 12,
@@ -57,6 +59,7 @@ public class Syncher.WelcomeView : Gtk.Box {
         carousel.append (welcome_page);
         carousel.append (location_page);
         carousel.append (module_page);
+        carousel.append (permission_page);
 
         var help_link = new Gtk.LinkButton.with_label ("https://github.com/leolost2605/syncher/wiki/First-Setup-Guide", _("Need help?"));
 
@@ -101,8 +104,14 @@ public class Syncher.WelcomeView : Gtk.Box {
         append (overlay);
 
         next_button.clicked.connect (() => {
-            var current = (int) carousel.position;
-            carousel.scroll_to (carousel.get_nth_page (current + 1), true);
+            var current = (int) carousel.position;;
+
+            if (carousel.get_nth_page (current) == permission_page) {
+                var app = (Application) GLib.Application.get_default ();
+                app.request_background.begin (() => carousel.scroll_to (carousel.get_nth_page (current + 1), true));
+            } else {
+                carousel.scroll_to (carousel.get_nth_page (current + 1), true);
+            }
         });
 
         carousel.page_changed.connect ((pos) => {
@@ -133,6 +142,8 @@ public class Syncher.WelcomeView : Gtk.Box {
 
         if (page is WelcomePage) {
             next_button.label = _("Get Started");
+        } else if (page is PermissionPage) {
+            next_button.label = _("Request Permission…");
         } else {
             next_button.label = _("Next");
         }
