@@ -27,7 +27,9 @@ public class Syncher.LocationPage : Gtk.Grid, AbstractWelcomePage {
         top_box.append (image);
         top_box.append (label);
 
-        var drop_down_checkbutton = new Gtk.CheckButton ();
+        var drop_down_checkbutton = new Gtk.CheckButton () {
+            active = true
+        };
 
         var drop_down_label = new Gtk.Label (_("Connected volumes will automatically show up here: ")) {
             halign = START
