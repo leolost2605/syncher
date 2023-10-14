@@ -104,7 +104,7 @@ public class Syncher.WelcomeView : Gtk.Box {
         append (overlay);
 
         next_button.clicked.connect (() => {
-            var current = (int) carousel.position;;
+            var current = (int) carousel.position;
 
             if (carousel.get_nth_page (current) == permission_page) {
                 var app = (Application) GLib.Application.get_default ();

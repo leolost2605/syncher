@@ -13,6 +13,7 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
     };
 
     private ErrorView error_view;
+    private ProgressView progress_view;
     private Adw.Leaflet leaflet;
 
     public MainWindow (Application application) {
@@ -23,12 +24,15 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
 
     construct {
         add_action_entries (ACTION_ENTRIES, this);
+        print ("CONSTRUCT WINDOW");
+
+        var syncher_service = SyncherService.get_default ();
 
         error_view = new ErrorView ();
 
         var home_view = new HomeView ();
 
-        var progress_view = new ProgressView ();
+        progress_view = new ProgressView ();
 
         leaflet = new Adw.Leaflet () {
             can_unfold = false,
@@ -48,6 +52,10 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
             leaflet.append (home_view);
         }
 
+        if (syncher_service.working) {
+            leaflet.append (progress_view);
+        }
+
         child = leaflet;
         default_height = 550;
         default_width = 800;
@@ -55,12 +63,8 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
         titlebar = new Gtk.Grid () { visible = false };
         present ();
 
-        var syncher_service = SyncherService.get_default ();
-
-        syncher_service.start_sync.connect (() => {
-            leaflet.append (progress_view);
-            leaflet.visible_child = progress_view;
-        });
+        update_working_state ();
+        syncher_service.start_sync.connect (update_working_state);
 
         update_error_state ();
         syncher_service.notify["error-state"].connect (update_error_state);
@@ -74,6 +78,13 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
 
     private void on_action_preferences () {
         new PreferencesWindow (this);
+    }
+
+    private void update_working_state () {
+        if (SyncherService.get_default ().working) {
+            leaflet.append (progress_view);
+            leaflet.visible_child = progress_view;
+        }
     }
 
     private void update_error_state () {

@@ -33,6 +33,9 @@ public class Syncher.Application : Gtk.Application {
         base.startup ();
         // Adw.init ();
         hold ();
+
+        var syncher_service = SyncherService.get_default ();
+        syncher_service.setup_saved_synchronization ();
     }
 
     protected override void activate () {
@@ -44,6 +47,10 @@ public class Syncher.Application : Gtk.Application {
 
         if (main_window == null) {
             main_window = new MainWindow (this);
+            main_window.close_request.connect (() => {
+                main_window = null;
+                return false;
+            });
         } else {
             main_window.present ();
         }
