@@ -37,9 +37,9 @@ public class Syncher.ProgressWidget : Object {
 
         stack = new Gtk.Stack ();
         stack.add_child (step_label);
-        stack.add_child (spinner);
-        stack.add_child (image);
-        stack.add_child (fatal_image);
+        stack.add_named (spinner, "spinner");
+        stack.add_named (image, "image");
+        stack.add_named (fatal_image, "fatal");
 
         label_widget = new Gtk.Label (sync_type == IMPORT ? module.import_label : module.export_label);
 
@@ -85,19 +85,8 @@ public class Syncher.ProgressWidget : Object {
 
         var syncher_service = SyncherService.get_default ();
 
-        module.progress.connect ((percentage) => {
-            progress_bar.fraction = (double) percentage / 100;
-
-            if (stack.visible_child == fatal_image) {
-                return;
-            }
-
-            if (percentage == 100) {
-                stack.set_visible_child (image);
-            } else if (percentage > 0) {
-                stack.set_visible_child (spinner);
-            }
-        });
+        update_progress ();
+        module.notify["progress"].connect (update_progress);
 
         module.error.connect ((msg, details) => {
             error_info.reveal_child = true;
@@ -123,6 +112,20 @@ public class Syncher.ProgressWidget : Object {
         error_info_button.clicked.connect (() => {
             error_dialog.present ();
         });
+    }
+
+    private void update_progress () {
+        progress_bar.fraction = (double) module.progress / 100;
+
+        if (stack.visible_child_name == "fatal") {
+            return;
+        }
+
+        if (module.progress == 100) {
+            stack.set_visible_child_name ("image");
+        } else if (module.progress > 0) {
+            stack.set_visible_child_name ("spinner");
+        }
     }
 
     private void add_error_details (string msg, string details, bool fatal = false) {

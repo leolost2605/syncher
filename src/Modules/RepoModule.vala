@@ -9,7 +9,7 @@ public class Syncher.RepoModule : Module {
     }
 
     public async override void import (File file) {
-        progress (0);
+        progress = 0;
 
         if (!file.query_exists ()) {
             fatal_error ("File doesn't exist.");
@@ -63,14 +63,14 @@ public class Syncher.RepoModule : Module {
                 error (_("Failed to add flatpak remote '%s'").printf (remotes[i]), "Unknown parameters provided.");
             }
 
-            progress (((i + 1) / remotes.length) * 100);
+            progress = ((i + 1) / remotes.length) * 100;
         }
 
-        progress (100);
+        progress = 100;
     }
 
     public async override void export (File file) {
-        progress (0);
+        progress = 0;
 
         try {
             var subprocess = new Subprocess (
@@ -87,7 +87,7 @@ public class Syncher.RepoModule : Module {
             Bytes stdout;
             yield subprocess.communicate_async (null, cancellable, out stdout, out stderr);
 
-            progress (50);
+            progress = 50;
 
             var stderr_data = Bytes.unref_to_data (stderr);
             var stdout_data = Bytes.unref_to_data (stdout);
@@ -104,6 +104,6 @@ public class Syncher.RepoModule : Module {
             fatal_error ("Failed to create subprocess: %s".printf (e.message));
         }
 
-        progress (100);
+        progress = 100;
     }
 }

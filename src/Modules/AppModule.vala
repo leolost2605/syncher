@@ -9,7 +9,7 @@ public class Syncher.AppModule : Module {
     }
 
     public async override void import (File file) {
-        progress (0);
+        progress = 0;
 
         if (!file.query_exists ()) {
             fatal_error ("File doesn't exist.");
@@ -64,14 +64,14 @@ public class Syncher.AppModule : Module {
                 error (_("Failed to install flatpak app '%s'").printf (apps[i]), "Unknown parameters provided.");
             }
 
-            progress ((int) (((double) (i + 1) / (double) apps.length) * 100));
+            progress = (int) (((double) (i + 1) / (double) apps.length) * 100);
         }
 
-        progress (100);
+        progress = 100;
     }
 
     public async override void export (File file) {
-        progress (0);
+        progress = 0;
 
         try {
             var subprocess = new Subprocess (
@@ -89,7 +89,7 @@ public class Syncher.AppModule : Module {
             Bytes stdout;
             yield subprocess.communicate_async (null, cancellable, out stdout, out stderr);
 
-            progress (50);
+            progress = 50;
 
             var stderr_data = Bytes.unref_to_data (stderr);
             var stdout_data = Bytes.unref_to_data (stdout);
@@ -106,6 +106,6 @@ public class Syncher.AppModule : Module {
             fatal_error ("Failed to create subprocess: %s".printf (e.message));
         }
 
-        progress (100);
+        progress = 100;
     }
 }

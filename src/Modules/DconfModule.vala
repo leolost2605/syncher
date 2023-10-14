@@ -9,7 +9,7 @@ public class Syncher.DconfModule : Module {
     }
 
     public async override void import (File file) {
-        progress (0);
+        progress = 0;
 
         if (!file.query_exists ()) {
             fatal_error ("File doesn't exist.");
@@ -29,7 +29,7 @@ public class Syncher.DconfModule : Module {
             uint8[] contents;
             try {
                 yield file.load_contents_async (cancellable, out contents, null);
-                progress (50);
+                progress = 50;
             } catch (Error e) {
                 fatal_error ("Failed to load config file: %s".printf (e.message));
                 return;
@@ -46,11 +46,11 @@ public class Syncher.DconfModule : Module {
             fatal_error ("Failed to create dconf load subprocess: %s".printf (e.message));
         }
 
-        progress (100);
+        progress = 100;
     }
 
     public async override void export (File file) {
-        progress (0);
+        progress = 0;
 
         try {
             var subprocess = new Subprocess (
@@ -66,7 +66,7 @@ public class Syncher.DconfModule : Module {
             Bytes stdout;
             yield subprocess.communicate_async (null, cancellable, out stdout, out stderr);
 
-            progress (50);
+            progress = 50;
 
             var stderr_data = Bytes.unref_to_data (stderr);
             var stdout_data = Bytes.unref_to_data (stdout);
@@ -83,6 +83,6 @@ public class Syncher.DconfModule : Module {
             fatal_error ("Failed to create subprocess: %s".printf (e.message));
         }
 
-        progress (100);
+        progress = 100;
     }
 }

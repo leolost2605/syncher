@@ -100,8 +100,6 @@ public class Syncher.ProgressView : Gtk.Box {
             grid.remove_row (0);
             grid.remove_row (0);
             grid.remove_row (0);
-
-            completed_stack.set_visible_child_name ("step");
         });
     }
 
@@ -113,6 +111,8 @@ public class Syncher.ProgressView : Gtk.Box {
             back_button.label = _("Back");
             return;
         }
+
+        completed_stack.set_visible_child_name ("step");
 
         back_button.label = _("Cancel");
 
