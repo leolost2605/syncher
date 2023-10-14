@@ -14,6 +14,7 @@ public class Syncher.SyncherService : Object {
     }
 
     public enum SyncType {
+        NONE,
         IMPORT,
         EXPORT
     }
@@ -26,6 +27,7 @@ public class Syncher.SyncherService : Object {
     public Error? error_state { get; private set; default = null; }
     public File sync_dir { get; private set; }
     public bool working { get; private set; default = false; }
+    public SyncType current_sync_type { get; private set; default = NONE; }
 
     public List<Module> modules;
 

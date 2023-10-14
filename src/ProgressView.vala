@@ -1,8 +1,14 @@
 public class Syncher.ProgressView : Gtk.Box {
     public Gtk.HeaderBar header_bar { get; construct; }
 
+    private Gtk.Button back_button;
+    private Gtk.Label completed_step_label;
+    private Gtk.Stack completed_stack;
+    private Gtk.Label completed_label;
+    private Gtk.Grid grid;
+
     construct {
-        var back_button = new Gtk.Button.with_label ("") {
+        back_button = new Gtk.Button.with_label ("") {
             valign = CENTER
         };
         back_button.add_css_class (Granite.STYLE_CLASS_BACK_BUTTON);
@@ -15,13 +21,17 @@ public class Syncher.ProgressView : Gtk.Box {
         header_bar.add_css_class (Granite.STYLE_CLASS_FLAT);
         header_bar.pack_start (back_button);
 
-        var completed_stack = new Gtk.Stack ();
-        completed_stack.add_named (new Gtk.Label ("<big>4</big>") { use_markup = true }, "step");
+        completed_step_label = new Gtk.Label (null) {
+            use_markup = true
+        };
+
+        completed_stack = new Gtk.Stack ();
+        completed_stack.add_named (completed_step_label, "step");
         completed_stack.add_named (new Gtk.Image.from_icon_name ("emblem-default") { pixel_size = 32 }, "emblem");
 
-        var completed_label = new Gtk.Label (_("Completed"));
+        completed_label = new Gtk.Label (_("Completed"));
 
-        var grid = new Gtk.Grid () {
+        grid = new Gtk.Grid () {
             hexpand = true,
             valign = CENTER,
             row_spacing = 12,
@@ -74,33 +84,8 @@ public class Syncher.ProgressView : Gtk.Box {
             ((Adw.Leaflet) get_ancestor (typeof (Adw.Leaflet))).navigate (BACK);
         });
 
-        syncher_service.start_sync.connect ((sync_type) => {
-            back_button.label = _("Cancel");
-
-            ProgressWidget[] progress_widgets = {};
-
-            int step = 1;
-            foreach (var module in syncher_service.modules) {
-                if (!module.enabled) {
-                    continue;
-                }
-
-                progress_widgets += new ProgressWidget (module, step++, sync_type);
-            }
-
-            int current = 0;
-            foreach (var progress_widget in progress_widgets) {
-                grid.attach (progress_widget.stack, current + 1, 0, 1, 1);
-                grid.attach (progress_widget.label_widget, current, 1, 3, 1);
-                grid.attach (progress_widget.progress_bar, current + 2, 0, 3, 1);
-                grid.attach (progress_widget.error_info, current + 1, 2, 1, 1);
-
-                current += 4;
-            }
-
-            grid.attach (completed_stack, current + 1, 0, 1, 1);
-            grid.attach (completed_label, current, 1, 3, 1);
-        });
+        update_working_state ();
+        syncher_service.notify["working"].connect (update_working_state);
 
         syncher_service.fatal_error.connect ((step, msg, details) => {
             if (step != SETUP && step != PREPARING) {
@@ -108,11 +93,6 @@ public class Syncher.ProgressView : Gtk.Box {
             }
 
             grid.sensitive = false;
-        });
-
-        syncher_service.finish_sync.connect (() => {
-            completed_stack.set_visible_child_name ("emblem");
-            back_button.label = _("Back");
         });
 
         unmap.connect (() => {
@@ -123,5 +103,42 @@ public class Syncher.ProgressView : Gtk.Box {
 
             completed_stack.set_visible_child_name ("step");
         });
+    }
+
+    private void update_working_state () {
+        var syncher_service = SyncherService.get_default ();
+
+        if (!syncher_service.working) {
+            completed_stack.set_visible_child_name ("emblem");
+            back_button.label = _("Back");
+            return;
+        }
+
+        back_button.label = _("Cancel");
+
+        ProgressWidget[] progress_widgets = {};
+
+        int step = 1;
+        foreach (var module in syncher_service.modules) {
+            if (!module.enabled) {
+                continue;
+            }
+
+            progress_widgets += new ProgressWidget (module, step++, syncher_service.current_sync_type);
+        }
+
+        int current = 0;
+        foreach (var progress_widget in progress_widgets) {
+            grid.attach (progress_widget.stack, current + 1, 0, 1, 1);
+            grid.attach (progress_widget.label_widget, current, 1, 3, 1);
+            grid.attach (progress_widget.progress_bar, current + 2, 0, 3, 1);
+            grid.attach (progress_widget.error_info, current + 1, 2, 1, 1);
+
+            current += 4;
+        }
+
+        completed_step_label.label = "<big>%i</big>".printf (step);
+        grid.attach (completed_stack, current + 1, 0, 1, 1);
+        grid.attach (completed_label, current, 1, 3, 1);
     }
 }

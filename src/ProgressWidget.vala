@@ -85,10 +85,6 @@ public class Syncher.ProgressWidget : Object {
 
         var syncher_service = SyncherService.get_default ();
 
-        syncher_service.start_sync.connect (() => {
-            // error_dialog_list.remove_all ();
-        });
-
         module.progress.connect ((percentage) => {
             progress_bar.fraction = (double) percentage / 100;
 

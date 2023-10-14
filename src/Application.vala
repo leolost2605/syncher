@@ -64,7 +64,7 @@ public class Syncher.Application : Gtk.Application {
         try {
             if (!yield portal.request_background (
                 parent,
-                _("Syncher will automatically start when this device turns on and run when its window is closed so that it can keep it up to date."),
+                _("Syncher will automatically start when this device turns on and run when its window is closed so that it can keep this device up to date."),
                 (owned) command,
                 Xdp.BackgroundFlags.AUTOSTART,
                 null
