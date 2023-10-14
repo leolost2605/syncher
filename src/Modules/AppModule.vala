@@ -1,9 +1,4 @@
-public class Syncher.AppModule : Object, Module {
-    public string import_label { get; set; }
-    public string export_label { get; set; }
-    public string id { get; set; }
-    public bool enabled { get; set; default = true; }
-
+public class Syncher.AppModule : Module {
     construct {
         var settings = new GLib.Settings ("io.github.leolost2605.syncher");
         settings.bind ("sync-apps", this, "enabled", DEFAULT);
@@ -13,7 +8,7 @@ public class Syncher.AppModule : Object, Module {
         id = "app";
     }
 
-    public async void import (File file) {
+    public async override void import (File file) {
         progress (0);
 
         if (!file.query_exists ()) {
@@ -23,7 +18,7 @@ public class Syncher.AppModule : Object, Module {
 
         uint8[] contents;
         try {
-            yield file.load_contents_async (null, out contents, null);
+            yield file.load_contents_async (cancellable, out contents, null);
         } catch (Error e) {
             fatal_error ("Failed to load file: %s".printf (e.message));
             return;
@@ -32,6 +27,10 @@ public class Syncher.AppModule : Object, Module {
         var apps = ((string)contents).split_set ("\n");
 
         for (int i = 0; i < apps.length - 1; i++) {
+            if (cancellable.is_cancelled ()) {
+                return;
+            }
+
             var parts = apps[i].split_set ("\t");
 
             if (parts.length == 2) {
@@ -71,7 +70,7 @@ public class Syncher.AppModule : Object, Module {
         progress (100);
     }
 
-    public async void export (File file) {
+    public async override void export (File file) {
         progress (0);
 
         try {
@@ -88,7 +87,7 @@ public class Syncher.AppModule : Object, Module {
 
             Bytes stderr;
             Bytes stdout;
-            yield subprocess.communicate_async (null, null, out stdout, out stderr);
+            yield subprocess.communicate_async (null, cancellable, out stdout, out stderr);
 
             progress (50);
 
@@ -98,7 +97,7 @@ public class Syncher.AppModule : Object, Module {
                 fatal_error ("Failed to save flatpak apps: %s".printf ((string) stderr_data));
             } else if (stdout_data != null) {
                 try {
-                    yield file.replace_contents_async (stdout_data, null, false, REPLACE_DESTINATION, null, null);
+                    yield file.replace_contents_async (stdout_data, null, false, REPLACE_DESTINATION, cancellable, null);
                 } catch (Error e) {
                     fatal_error ("Failed to replace contents: %s".printf (e.message));
                 }

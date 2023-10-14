@@ -25,6 +25,7 @@ public class Syncher.SyncherService : Object {
 
     public Error? error_state { get; private set; default = null; }
     public File sync_dir { get; private set; }
+    public bool working { get; private set; default = false; }
 
     public List<Module> modules;
 
@@ -78,6 +79,9 @@ public class Syncher.SyncherService : Object {
     }
 
     public async void sync (File? dir = null, bool should_export = true) {
+        cancellable.reset ();
+        working = true;
+
         if (dir == null) {
             dir = sync_dir;
         }
@@ -100,6 +104,7 @@ public class Syncher.SyncherService : Object {
                     print ("Export!");
                     yield export (dir);
                 } else {
+                    critical ("Something is wrong!");
                     return;
                 }
 
@@ -110,12 +115,18 @@ public class Syncher.SyncherService : Object {
         } catch (Error e) {
             warning ("Failed to get file info: %s", e.message);
         }
+
+        working = false;
     }
 
     public async void import (File dir) {
         start_sync (IMPORT);
 
         foreach (var module in modules) {
+            if (cancellable.is_cancelled ()) {
+                break;
+            }
+
             if (!module.enabled) {
                 continue;
             }
@@ -131,6 +142,10 @@ public class Syncher.SyncherService : Object {
         start_sync (EXPORT);
 
         foreach (var module in modules) {
+            if (cancellable.is_cancelled ()) {
+                break;
+            }
+
             if (!module.enabled) {
                 continue;
             }
@@ -140,5 +155,17 @@ public class Syncher.SyncherService : Object {
         }
 
         finish_sync ();
+    }
+
+    public void cancel () {
+        if (!working) {
+            return;
+        }
+
+        cancellable.cancel ();
+
+        foreach (var module in modules) {
+            module.cancel ();
+        }
     }
 }

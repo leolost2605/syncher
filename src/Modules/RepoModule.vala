@@ -1,9 +1,4 @@
-public class Syncher.RepoModule : Object, Module {
-    public string import_label { get; set; }
-    public string export_label { get; set; }
-    public string id { get; set; }
-    public bool enabled { get; set; default = true; }
-
+public class Syncher.RepoModule : Module {
     construct {
         var settings = new GLib.Settings ("io.github.leolost2605.syncher");
         settings.bind ("sync-apps", this, "enabled", DEFAULT);
@@ -13,7 +8,7 @@ public class Syncher.RepoModule : Object, Module {
         id = "repo";
     }
 
-    public async void import (File file) {
+    public async override void import (File file) {
         progress (0);
 
         if (!file.query_exists ()) {
@@ -23,7 +18,7 @@ public class Syncher.RepoModule : Object, Module {
 
         uint8[] contents;
         try {
-            yield file.load_contents_async (null, out contents, null);
+            yield file.load_contents_async (cancellable, out contents, null);
         } catch (Error e) {
             fatal_error ("Failed to load file: %s".printf (e.message));
             return;
@@ -32,6 +27,10 @@ public class Syncher.RepoModule : Object, Module {
         var remotes = ((string) contents).split_set ("\n");
 
         for (int i = 0; i < remotes.length - 1; i++) {
+            if (cancellable.is_cancelled ()) {
+                return;
+            }
+
             var parts = remotes[i].split_set ("\t");
 
             if (parts.length == 2) {
@@ -48,7 +47,7 @@ public class Syncher.RepoModule : Object, Module {
                     );
 
                     Bytes stderr;
-                    yield subprocess.communicate_async (null, null, null, out stderr);
+                    yield subprocess.communicate_async (null, cancellable, null, out stderr);
 
                     var stderr_data = Bytes.unref_to_data (stderr);
                     if (stderr_data != null) {
@@ -70,7 +69,7 @@ public class Syncher.RepoModule : Object, Module {
         progress (100);
     }
 
-    public async void export (File file) {
+    public async override void export (File file) {
         progress (0);
 
         try {
@@ -86,7 +85,7 @@ public class Syncher.RepoModule : Object, Module {
 
             Bytes stderr;
             Bytes stdout;
-            yield subprocess.communicate_async (null, null, out stdout, out stderr);
+            yield subprocess.communicate_async (null, cancellable, out stdout, out stderr);
 
             progress (50);
 
@@ -96,7 +95,7 @@ public class Syncher.RepoModule : Object, Module {
                 fatal_error ("Failed to save flatpak remotes: %s".printf ((string) stderr_data));
             } else if (stdout_data != null) {
                 try {
-                    yield file.replace_contents_async (stdout_data, null, false, REPLACE_DESTINATION, null, null);
+                    yield file.replace_contents_async (stdout_data, null, false, REPLACE_DESTINATION, cancellable, null);
                 } catch (Error e) {
                     fatal_error ("Failed to replace contents: %s".printf (e.message));
                 }

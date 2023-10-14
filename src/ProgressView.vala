@@ -1,8 +1,6 @@
 public class Syncher.ProgressView : Gtk.Box {
     construct {
-        var back_button = new Gtk.Button.with_label (_("Back")) {
-            visible = false
-        };
+        var back_button = new Gtk.Button.with_label ("");
         back_button.add_css_class (Granite.STYLE_CLASS_BACK_BUTTON);
 
         var header_bar = new Gtk.HeaderBar () {
@@ -62,15 +60,19 @@ public class Syncher.ProgressView : Gtk.Box {
         orientation = VERTICAL;
         append (overlay);
 
+        var syncher_service = SyncherService.get_default ();
+
         back_button.clicked.connect (() => {
+            if (syncher_service.working) {
+                syncher_service.cancel ();
+            }
+
             ((Adw.Leaflet) get_ancestor (typeof (Adw.Leaflet))).navigate (BACK);
         });
 
-        var settings = new GLib.Settings ("io.github.leolost2605.syncher");
-
-        var syncher_service = SyncherService.get_default ();
-
         syncher_service.start_sync.connect ((sync_type) => {
+            back_button.label = _("Cancel");
+
             ProgressWidget[] progress_widgets = {};
 
             int step = 1;
@@ -106,7 +108,7 @@ public class Syncher.ProgressView : Gtk.Box {
 
         syncher_service.finish_sync.connect (() => {
             completed_stack.set_visible_child_name ("emblem");
-            back_button.visible = true;
+            back_button.label = _("Back");
         });
 
         unmap.connect (() => {
@@ -116,7 +118,6 @@ public class Syncher.ProgressView : Gtk.Box {
             grid.remove_row (0);
 
             completed_stack.set_visible_child_name ("step");
-            back_button.visible = false;
         });
     }
 }
