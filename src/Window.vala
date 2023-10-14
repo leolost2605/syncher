@@ -64,7 +64,7 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
         }
 
         update_working_state ();
-        syncher_service.start_sync.connect (update_working_state);
+        syncher_service.notify["working"].connect (update_working_state);
 
         update_error_state ();
         syncher_service.notify["error-state"].connect (update_error_state);

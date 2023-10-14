@@ -5,7 +5,6 @@
 
 public class Syncher.SyncherService : Object {
     public signal void fatal_error (ProgressStep step, string msg, string details = "");
-    public signal void start_sync (SyncType sync_type);
     public signal void finish_sync ();
 
     public enum ProgressStep {
@@ -39,6 +38,12 @@ public class Syncher.SyncherService : Object {
         modules = new List<Module> ();
         settings = new GLib.Settings ("io.github.leolost2605.syncher");
         cancellable = new Cancellable ();
+
+        notify["working"].connect (() => {
+            if (!working) {
+                current_sync_type = NONE;
+            }
+        });
 
         fatal_error.connect ((step, msg) => warning ("An error occured during %s: %s", step.to_string (), msg));
 
@@ -122,7 +127,7 @@ public class Syncher.SyncherService : Object {
     }
 
     public async void import (File dir) {
-        start_sync (IMPORT);
+        current_sync_type = IMPORT;
 
         foreach (var module in modules) {
             if (cancellable.is_cancelled ()) {
@@ -141,7 +146,7 @@ public class Syncher.SyncherService : Object {
     }
 
     public async void export (File dir) {
-        start_sync (EXPORT);
+        current_sync_type = EXPORT;
 
         foreach (var module in modules) {
             if (cancellable.is_cancelled ()) {

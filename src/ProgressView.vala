@@ -8,7 +8,7 @@ public class Syncher.ProgressView : Gtk.Box {
     private Gtk.Grid grid;
 
     construct {
-        back_button = new Gtk.Button.with_label ("") {
+        back_button = new Gtk.Button () {
             valign = CENTER
         };
         back_button.add_css_class (Granite.STYLE_CLASS_BACK_BUTTON);
