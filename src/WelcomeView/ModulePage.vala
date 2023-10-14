@@ -36,7 +36,7 @@ public class Syncher.ModulePage : Gtk.Box {
         };
         settings.bind ("sync-apps", apps_switch, "active", DEFAULT);
 
-        var config_label = new Gtk.Label (_("Configuration")) {
+        var config_label = new Gtk.Label (_("Settings")) {
             halign = END
         };
 
