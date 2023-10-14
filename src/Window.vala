@@ -24,7 +24,6 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
 
     construct {
         add_action_entries (ACTION_ENTRIES, this);
-        print ("CONSTRUCT WINDOW");
 
         var syncher_service = SyncherService.get_default ();
 
