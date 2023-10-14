@@ -1,0 +1,9 @@
+src/Application.vala
+src/ErrorView.vala
+src/HomeView.vala
+src/PreferencesWindow.vala
+src/ProgressView.vala
+src/ProgressWidget.vala
+src/Window.vala
+data/io.github.leolost2605.syncher.desktop.in
+data/io.github.leolost2605.syncher.metainfo.xml.in
