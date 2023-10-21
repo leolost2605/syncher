@@ -58,16 +58,16 @@ public class Syncher.ProgressWidget : Object {
         };
 
         var header_bar = new Gtk.HeaderBar () {
-            title_widget = new Gtk.Label ("Error!")
+            title_widget = new Gtk.Label (_("Errors"))
         };
         header_bar.add_css_class (Granite.STYLE_CLASS_FLAT);
         header_bar.add_css_class (Granite.STYLE_CLASS_DEFAULT_DECORATION);
 
         error_dialog_list = new Gtk.ListBox () {
-            margin_start = 3,
-            margin_end = 3,
-            margin_top = 3,
-            margin_bottom = 3
+            margin_start = 6,
+            margin_end = 6,
+            margin_top = 6,
+            margin_bottom = 6
         };
         error_dialog_list.add_css_class (Granite.STYLE_CLASS_BACKGROUND);
         error_dialog_list.bind_model (module.errors, create_widget_func);
@@ -133,7 +133,12 @@ public class Syncher.ProgressWidget : Object {
         };
         details_label.add_css_class (Granite.STYLE_CLASS_TERMINAL);
 
-        var expander = new Gtk.Expander (err.fatal ? _("Fatal error: %s").printf (err.msg) : err.msg) {
+        var expander_label = new Gtk.Label (err.fatal ? _("Fatal error: %s").printf (err.msg) : err.msg) {
+            ellipsize = END
+        };
+
+        var expander = new Gtk.Expander (null) {
+            label_widget = expander_label,
             child = details_label,
             hexpand = true,
             margin_top = 3,
