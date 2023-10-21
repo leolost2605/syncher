@@ -53,7 +53,8 @@ public class Syncher.ProgressWidget : Object {
 
         error_info = new Gtk.Revealer () {
             child = error_info_button,
-            reveal_child = false
+            reveal_child = false,
+            transition_type = SLIDE_DOWN
         };
 
         var header_bar = new Gtk.HeaderBar () {
@@ -69,6 +70,7 @@ public class Syncher.ProgressWidget : Object {
             margin_bottom = 3
         };
         error_dialog_list.add_css_class (Granite.STYLE_CLASS_BACKGROUND);
+        error_dialog_list.bind_model (module.errors, create_widget_func);
 
         var scrolled_window = new Gtk.ScrolledWindow () {
             child = error_dialog_list,
@@ -87,20 +89,6 @@ public class Syncher.ProgressWidget : Object {
 
         update_progress ();
         module.notify["progress"].connect (update_progress);
-
-        module.error.connect ((msg, details) => {
-            error_info.reveal_child = true;
-
-            add_error_details (msg, details);
-        });
-
-        module.fatal_error.connect ((msg, details) => {
-            stack.set_visible_child (fatal_image);
-            error_info.reveal_child = true;
-            progress_bar.sensitive = false;
-
-            add_error_details (msg, details, true);
-        });
 
         progress_bar.unmap.connect (() => {
             progress_bar.sensitive = true;
@@ -128,20 +116,30 @@ public class Syncher.ProgressWidget : Object {
         }
     }
 
-    private void add_error_details (string msg, string details, bool fatal = false) {
-        var details_label = new Gtk.Label (details) {
+    private Gtk.Widget create_widget_func (Object obj) {
+        error_info.reveal_child = true;
+
+        var err = (Module.DetailedError) obj;
+
+        if (err.fatal) {
+            stack.set_visible_child_name ("fatal");
+            error_info.reveal_child = true;
+            progress_bar.sensitive = false;
+        }
+
+        var details_label = new Gtk.Label (err.details) {
             wrap = true,
             wrap_mode = WORD_CHAR
         };
         details_label.add_css_class (Granite.STYLE_CLASS_TERMINAL);
 
-        var expander = new Gtk.Expander (fatal ? _("Fatal error: %s").printf (msg) : msg) {
+        var expander = new Gtk.Expander (err.fatal ? _("Fatal error: %s").printf (err.msg) : err.msg) {
             child = details_label,
             hexpand = true,
             margin_top = 3,
             margin_bottom = 3
         };
 
-        error_dialog_list.append (expander);
+        return expander;
     }
 }
