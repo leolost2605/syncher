@@ -56,7 +56,7 @@ public class Syncher.MainWindow : Gtk.ApplicationWindow {
             leaflet.append (welcome_view);
             welcome_view.finished.connect (() => {
                 leaflet.append (home_view);
-                leaflet.visible_child = home_view;
+                SyncherService.get_default ().setup_saved_synchronization ();
                 leaflet.remove (welcome_view);
             });
         } else {

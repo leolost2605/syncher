@@ -49,10 +49,12 @@ public class Syncher.SyncherService : Object {
 
     public void setup_saved_synchronization () {
         var saved_location = settings.get_string ("sync-location");
-        if (saved_location != "") {
-            var dir = File.new_for_uri (saved_location);
-            setup_synchronization (dir);
+        if (saved_location == "") {
+            return;
         }
+
+        var dir = File.new_for_uri (saved_location);
+        setup_synchronization (dir);
 
         modules.append (new DconfModule ());
         modules.append (new RepoModule ());

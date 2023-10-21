@@ -24,6 +24,7 @@ executable(
     'src' / 'Modules' / 'DconfModule.vala',
     'src' / 'Modules' / 'RepoModule.vala',
     'src' / 'WelcomeView' / 'AbstractWelcomePage.vala',
+    'src' / 'WelcomeView' / 'FinishPage.vala',
     'src' / 'WelcomeView' / 'LocationPage.vala',
     'src' / 'WelcomeView' / 'ModulePage.vala',
     'src' / 'WelcomeView' / 'PermissionPage.vala',

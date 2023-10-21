@@ -1,8 +1,4 @@
 public abstract class Syncher.Module : Object {
-    // public signal void progress (int percentage); // This has to be emitted with 0 on start of import/export and with 100 on finish of import/export
-    // public signal void error (string msg, string details);
-    // public signal void fatal_error (string msg, string details = "");
-
     public class DetailedError : Object {
         public string msg { get; construct; }
         public string details { get; construct; }
