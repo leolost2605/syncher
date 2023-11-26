@@ -34,6 +34,10 @@ public class Syncher.RepoModule : Module {
             var parts = remotes[i].split_set ("\t");
 
             if (parts.length == 2) {
+                if (parts[1].has_prefix ("file")) {
+                    continue;
+                }
+
                 try {
                     var subprocess = new Subprocess (
                         STDERR_PIPE,
