@@ -14,7 +14,7 @@ public class Syncher.ModulePage : Gtk.Box, AbstractWelcomePage {
         var label = new Gtk.Label (
             "<span size='xx-large'><b>%s</b></span>\n<span weight='light'>%s</span>".printf (
                 _("What to synchronize"),
-                _("Next select the items you want to synchronize")
+                _("Next select the items you want to be synchronized:")
             )
         ) {
             halign = CENTER,

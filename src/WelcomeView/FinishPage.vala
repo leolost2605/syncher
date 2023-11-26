@@ -19,9 +19,8 @@ public class Syncher.FinishPage : Gtk.Box, AbstractWelcomePage {
         image_overlay.add_overlay (emblem);
 
         var label = new Gtk.Label (
-            "<span size='xx-large'><b>%s</b></span>\n<span weight='light'>%s</span>".printf (
-                _("Finish"),
-                _("Let's go!.")
+            "<span size='xx-large'><b>%s</b></span>".printf (
+                _("You are ready to go!")
             )
         ) {
             halign = CENTER,

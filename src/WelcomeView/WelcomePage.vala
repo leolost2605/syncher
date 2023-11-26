@@ -21,7 +21,7 @@ public class Syncher.WelcomePage : Gtk.Box, AbstractWelcomePage {
         var label = new Gtk.Label (
             "<span size='xx-large'><b>%s</b></span>\n<span weight='light'>%s</span>".printf (
                 _("Welcome"),
-                _("Follow the instructions to get Syncher up and running and out of your way for seamless integration between your devices! If you are new to Linux it is recommended to use the detailed First Setup Guide by clicking 'Need Help?'.")
+                _("Follow the instructions to get Syncher up and running and out of your way for seamless integration between your devices! If you are unsure what's going on it is recommended to use the detailed First Setup Guide by clicking 'Need Help?'.")
             )
         ) {
             halign = CENTER,
