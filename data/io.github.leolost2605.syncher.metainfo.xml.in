@@ -3,7 +3,7 @@
   <id>io.github.leolost2605.syncher</id>
 
   <name>Syncher</name>
-  <summary>A catchy tagline</summary>
+  <summary>Synchronize your apps and settings</summary>
 
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
@@ -16,7 +16,19 @@
 
   <description>
     <p>
-      A quick summary of your app&apos;s main selling points and features. Just a couple sentences per paragraph is best.
+      Synchronizes your apps and settings across your devices.
+    </p>
+    <p>
+      Works with any cloud provider (e.g. DropBox, Google Drive, Nextcloud, WebDAV, etc.) or via a local drive like a USB-Stick.
+    </p>
+    <p>
+      What gets synchronized?
+        Flatpak apps and remotes
+        Most settings (It backs up your DConf settings)
+    </p>
+    <p>
+      What Setups are supported?
+        To have Syncher reach its full potential it is best used on distros that use Flatpak apps as their main way of providing applications (elementary OS, Fedora, etc.) and on Desktops that use DConf as their main way of storing configuration (Pantheon, GNOME). However if you only need the one or the other you can use Syncher on any Setup you like!
     </p>
   </description>
 

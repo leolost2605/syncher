@@ -101,28 +101,15 @@ public class Syncher.HomeView : Gtk.Box {
         orientation = VERTICAL;
         append (overlay);
 
+        var syncher_service = SyncherService.get_default ();
+
         sync_now.clicked.connect (() => {
             sync_now_stack.visible_child = preparing_sync;
-            get_sync_location ();
+            syncher_service.sync.begin ();
         });
-
-        var syncher_service = SyncherService.get_default ();
 
         syncher_service.notify["working"].connect (() => {
             sync_now_stack.visible_child = sync_now;
         });
-    }
-
-    private void get_sync_location () {
-        var file_chooser = new Gtk.FileChooserNative ("Choose location", (Gtk.Window) get_root (), SELECT_FOLDER, "Accept", "Cancel");
-        file_chooser.response.connect ((res) => {
-            if (res == Gtk.ResponseType.ACCEPT) {
-                var file = file_chooser.get_file ();
-                SyncherService.get_default ().sync.begin (file);
-            }
-            file_chooser.destroy ();
-        });
-
-        file_chooser.show ();
     }
 }

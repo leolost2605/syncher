@@ -2,8 +2,8 @@
 Version=1.0
 Type=Application
 
-Name=Sycher
-Comment=A catchy tagline
+Name=Syncher
+Comment=Synchronize your apps and settings
 Categories=Education;ComputerScience;
 
 Icon=io.github.leolost2605.syncher
