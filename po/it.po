@@ -1,0 +1,166 @@
+# ITALIAN TRANSLATION.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the io.github.leolost2605.syncher package.
+# ALBANO BATTISTELLA <ALBANOBATTISTELLA@GMAIL.COM>, 2023.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: io.github.leolost2605.syncher\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-10-14 14:07+0200\n"
+"PO-Revision-Date: 2023-12-09 22:54+0200\n"
+"Last-Translator: Albano Battistella <albanobattistella@gmail.com>\n"
+"Language-Team: Italian <LL@li.org>\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/ErrorView.vala:8 src/HomeView.vala:4
+msgid "Preferences"
+msgstr "Preferenze"
+
+#: src/ErrorView.vala:70
+msgid "Retry"
+msgstr "Riprova"
+
+#: src/ErrorView.vala:82 src/PreferencesWindow.vala:30
+#: src/PreferencesWindow.vala:186
+msgid "Change Location…"
+msgstr "Cambia posizione…"
+
+#: src/ErrorView.vala:113
+msgid "Synchronization Failed"
+msgstr "Sincronizzazione non riuscita"
+
+#: src/ErrorView.vala:157
+msgid "A Fatal Error Occured"
+msgstr "Si è verificato un errore irreversibile"
+
+#: src/HomeView.vala:40
+msgid "Nothing to do!"
+msgstr "Niente da fare!"
+
+#: src/HomeView.vala:41
+msgid ""
+"You're all synchronized. To manually start a new synchronization click the "
+"button below."
+msgstr ""
+"Sei tutto sincronizzato. Per avviare manualmente una nuova sincronizzazione fare clic su "
+"pulsante in basso."
+
+#: src/HomeView.vala:51
+msgid "Synchronize Now"
+msgstr "Sincronizza ora"
+
+#: src/HomeView.vala:62
+msgid "Preparing sync…"
+msgstr "Preparazione della sincronizzazione…"
+
+#: src/PreferencesWindow.vala:11
+msgid "Location"
+msgstr "Posizione"
+
+#: src/PreferencesWindow.vala:12
+msgid "Shared location used to synchronize your devices."
+msgstr "Posizione condivisa utilizzata per sincronizzare i tuoi dispositivi."
+
+#: src/PreferencesWindow.vala:24
+msgid "Custom:"
+msgstr "Personalizzato:"
+
+#: src/PreferencesWindow.vala:47
+msgid "Only Import"
+msgstr "Solo importazione"
+
+#: src/PreferencesWindow.vala:48
+msgid ""
+"Never export this device configuration to the sync location. Can be useful "
+"if you want apps installed here to not show up on your other devices but "
+"their apps should still show up here."
+msgstr ""
+"Non esportare mai la configurazione del dispositivo nella posizione di sincronizzazione. Può essere utile "
+"se desideri che le app installate qui non vengano visualizzate sugli altri dispositivi ma "
+"le loro app dovrebbero comunque essere visualizzate qui."
+
+#: src/PreferencesWindow.vala:77
+msgid "Items"
+msgstr "Elementi"
+
+#: src/PreferencesWindow.vala:78
+msgid "Items to synchronize between your devices."
+msgstr "Elementi da sincronizzare tra i tuoi dispositivi."
+
+#: src/PreferencesWindow.vala:81
+msgid "Apps"
+msgstr "App"
+
+#: src/PreferencesWindow.vala:91
+msgid "Configuration"
+msgstr "Configurazione"
+
+#: src/PreferencesWindow.vala:115
+msgid "General"
+msgstr "Generale"
+
+#: src/PreferencesWindow.vala:116
+msgid "Modules"
+msgstr "Moduli"
+
+#: src/PreferencesWindow.vala:193
+msgid "Choose location"
+msgstr "Scegli posizione"
+
+#: src/PreferencesWindow.vala:193
+msgid "Accept"
+msgstr "Accetta"
+
+#: src/PreferencesWindow.vala:193 src/ProgressView.vala:74
+msgid "Cancel"
+msgstr "Annulla"
+
+#: src/ProgressView.vala:18
+msgid "Completed"
+msgstr "Completato"
+
+#: src/ProgressView.vala:29
+msgid "Working…"
+msgstr "Lavoro in corso…"
+
+#: src/ProgressView.vala:30
+msgid ""
+"Depending on your internet connection and number of apps, this can take a "
+"while."
+msgstr ""
+"A seconda della connessione Internet e del numero di app, l'operazione può richiedere un "
+"po di tempo."
+
+#: src/ProgressView.vala:111
+msgid "Back"
+msgstr "Indietro"
+
+#: src/ProgressWidget.vala:139
+#, c-format
+msgid "Fatal error: %s"
+msgstr "Errore irreversibile: %s"
+
+#: data/io.github.leolost2605.syncher.desktop.in:6
+msgid "Sycher"
+msgstr ""
+
+#: data/io.github.leolost2605.syncher.desktop.in:7
+#: data/io.github.leolost2605.syncher.metainfo.xml.in:6
+msgid "A catchy tagline"
+msgstr ""
+
+#: data/io.github.leolost2605.syncher.metainfo.xml.in:5
+msgid "Syncher"
+msgstr "Sincronizzatore"
+
+#: data/io.github.leolost2605.syncher.metainfo.xml.in:18
+msgid ""
+"A quick summary of your app's main selling points and features. Just a "
+"couple sentences per paragraph is best."
+msgstr ""
+"Un breve riepilogo dei principali punti di forza e delle funzionalità della tua app. Solo un "
+"un paio di frasi per paragrafo sono la soluzione migliore."
